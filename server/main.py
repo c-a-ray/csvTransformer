@@ -1,3 +1,6 @@
+# Able to: Load CSV, send to backend, parse data, display data in frontend, send display data back to backend, and recompile into dataframe
+# Next steps: Create database, create table from df when /insertsql is hit, get query from frontent, get query results, create csv with results, send csv to frontend
+
 from flask import Flask, request, jsonify
 from flask.helpers import make_response
 from pandas.io.parsers import read_csv
