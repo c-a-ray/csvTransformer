@@ -1,18 +1,6 @@
-from sqlalchemy import create_engine, text, INTEGER
+from sqlalchemy import create_engine, text
 from numpy import int64
 from pandas import DataFrame, read_sql
-
-numpyDataTypeLkp = {
-    int64: INTEGER
-}
-
-
-def getColumnsAndTypes(df: DataFrame) -> dict:
-    colTypeLkp = {}
-    firstRow = df.iloc[0]
-    for i, col_name in enumerate(df):
-        colTypeLkp[col_name] = numpyDataTypeLkp.get(type(firstRow[i]))
-    return colTypeLkp
 
 
 def pgEngine():
@@ -39,9 +27,8 @@ def create_formattedPGCols(colTypeLkp: dict) -> str:
 
 
 def init_table(df: DataFrame):
-    colTypeLkp = getColumnsAndTypes(df)
     with pgEngine().connect() as conn:
-        df.to_sql('temp', conn, if_exists='replace', dtype=colTypeLkp)
+        df.to_sql('temp', conn, if_exists='replace')
 
 
 def execute_query(query: str):
