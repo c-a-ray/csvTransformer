@@ -70,7 +70,6 @@ function App() {
 
     let body = await response.json();
     console.log(body);
-
     // setCurrentStep(3);
   }
 

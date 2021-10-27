@@ -3,11 +3,12 @@
 
 from flask import Flask, request, jsonify
 from flask.helpers import make_response
-from pandas.io.parsers import read_csv
-from flask_cors import CORS, cross_origin
-import pandas as pd
+from flask_cors import CORS
+from pandas import DataFrame, read_csv
 import os
-import json
+import postgres as pg
+
+from pandas.core.frame import DataFrame
 
 app = Flask(__name__)
 CORS(app)
@@ -21,7 +22,7 @@ def loadcsv():
         filepath = os.path.join(".", "data", file.filename)
         file.save(filepath)
         with open(filepath) as f:
-            df = pd.read_csv(f)
+            df = read_csv(f)
             col_names = df.columns.tolist()
             columns = []
             for name in col_names:
@@ -48,7 +49,11 @@ def loadcsv():
 
 @app.route("/insertsql", methods=['POST'])
 def insertsql():
-    data = request.get_json()
+    pg.init_table(compileDF(request.get_json()))
+    return make_response(jsonify({"success": 1}), 200)
+
+
+def compileDF(data) -> DataFrame:
     cols = data['columns']
     col_lkp = {}
     for i, col in enumerate(cols):
@@ -61,10 +66,7 @@ def insertsql():
             r[col_lkp[i]] = item
         rows[row['id']] = r
 
-    df = pd.DataFrame.from_dict(data=rows).T
-    print(df.head())
-
-    return make_response(jsonify({"ok": "all good"}), 200)
+    return DataFrame.from_dict(data=rows).T
 
 
 if __name__ == "__main__":
