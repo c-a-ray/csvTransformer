@@ -14,8 +14,12 @@ function Transform(props) {
     props.setQuery(e.target.value);
   };
 
-  function handleClick() {
+  function handleExecuteClick() {
     props.handleExecuteQuery(props.query);
+  }
+
+  function handleDownloadClick() {
+    props.handleDownloadClick(props.query);
   }
 
   return (
@@ -39,7 +43,8 @@ function Transform(props) {
                 onChange={handleQueryUpdate}
               />
             </InputGroup>
-            <Button onClick={handleClick}>Execute Query</Button>
+            <Button onClick={handleExecuteClick}>Execute Query</Button>
+            <Button onClick={handleDownloadClick}>Download CSV</Button>
           </CardBody>
         </Card>
       </span>

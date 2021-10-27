@@ -47,3 +47,9 @@ def init_table(df: DataFrame):
 def execute_query(query: str):
     with pgEngine().connect() as conn:
         return read_sql(query, conn)
+
+
+def create_downloadCSV(query: str, path_to_file: str):
+    with pgEngine().connect() as conn:
+        df = read_sql(query, conn)
+        df.to_csv(path_to_file, header=True)

@@ -90,6 +90,22 @@ function App() {
     setData(prepData(body));
   }
 
+  async function handleDownloadClick(query) {
+    const response = await fetch("http://127.0.0.1:8080/downloadcsv", {
+      method: "POST",
+      body: JSON.stringify({ query: query }),
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    let blob = await response.blob();
+    let url = window.URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = "transformed.csv";
+    a.click();
+  }
+
   function getCurrentStep(currentStep) {
     switch (currentStep) {
       default:
@@ -113,6 +129,7 @@ function App() {
             handleExecuteQuery={handleExecuteQuery}
             setQuery={setQuery}
             query={query}
+            handleDownloadClick={handleDownloadClick}
           />
         );
     }

@@ -2,7 +2,7 @@
 # Next steps: Create database, create table from df when /insertsql is hit, get query from frontent, get query results, create csv with results, send csv to frontend
 
 from flask import Flask, request, jsonify
-from flask.helpers import make_response
+from flask.helpers import make_response, send_file
 from flask_cors import CORS
 from pandas import DataFrame, read_csv
 import os
@@ -76,6 +76,15 @@ def executequery():
     resData = []
     resData.append(prepDataForFrontend(pg.execute_query(data.get('query'))))
     return make_response(jsonify(resData), 200)
+
+
+@app.route("/downloadcsv", methods=['POST'])
+def download_csv():
+    data = request.get_json()
+    query = data.get('query')
+    pathToFile = os.path.join('.', 'data', 'transformed.csv')
+    pg.create_downloadCSV(query, pathToFile)
+    return send_file(pathToFile, as_attachment=True)
 
 
 if __name__ == "__main__":
