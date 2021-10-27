@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./App.css";
 import FileUpload from "./components/FileUpload";
 import ConfigureData from "./components/ConfigureData";
+import Transform from "./components/Transform";
 
 function App() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -9,6 +10,7 @@ function App() {
   const [isSelected, setIsSelected] = useState(false);
   const [hasHeader, setHasHeader] = useState(true);
   const [data, setData] = useState();
+  const [query, setQuery] = useState();
 
   const selectFile = (event) => {
     setSelectedFile(event.target.files[0]);
@@ -69,8 +71,23 @@ function App() {
     });
 
     let body = await response.json();
-    console.log(body);
-    // setCurrentStep(3);
+    if (body["success"] == 1) {
+      setCurrentStep(3);
+    } else {
+      alert("Failed to insert into PostgreSQL DB");
+    }
+  }
+
+  async function handleExecuteQuery(query) {
+    const response = await fetch("http://127.0.0.1:8080/executequery", {
+      method: "POST",
+      body: JSON.stringify({ query: query }),
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    let body = await response.json();
+    setData(prepData(body));
   }
 
   function getCurrentStep(currentStep) {
@@ -90,7 +107,14 @@ function App() {
       case 2:
         return <ConfigureData data={data} onContinue={handleContinue} />;
       case 3:
-        return <div>Hey there!</div>;
+        return (
+          <Transform
+            data={data}
+            handleExecuteQuery={handleExecuteQuery}
+            setQuery={setQuery}
+            query={query}
+          />
+        );
     }
   }
 

@@ -22,29 +22,30 @@ def loadcsv():
         filepath = os.path.join(".", "data", file.filename)
         file.save(filepath)
         with open(filepath) as f:
-            df = read_csv(f)
-            col_names = df.columns.tolist()
-            columns = []
-            for name in col_names:
-                columns.append({
-                    'name': name
-                })
-
-            row_data = []
-            for index, row in df.iterrows():
-                r = {}
-                r['id'] = int(index)
-                for name in col_names:
-                    r[name] = int(row[name])
-                row_data.append(r)
-
-        json_result = {'columns': columns, 'rowData': row_data}
-        res_data.append(json_result)
+            res_data.append(prepDataForFrontend(read_csv(f)))
     except:
         res_data.append({'message': 'Failed to load CSV'})
 
-    res = make_response(jsonify(res_data), 200)
-    return res
+    return make_response(jsonify(res_data), 200)
+
+
+def prepDataForFrontend(df: DataFrame):
+    col_names = df.columns.tolist()
+    columns = []
+    for name in col_names:
+        columns.append({
+            'name': name
+        })
+
+    row_data = []
+    for index, row in df.iterrows():
+        r = {}
+        r['id'] = int(index)
+        for name in col_names:
+            r[name] = int(row[name])
+        row_data.append(r)
+
+    return {'columns': columns, 'rowData': row_data}
 
 
 @app.route("/insertsql", methods=['POST'])
@@ -67,6 +68,14 @@ def compileDF(data) -> DataFrame:
         rows[row['id']] = r
 
     return DataFrame.from_dict(data=rows).T
+
+
+@app.route("/executequery", methods=['POST'])
+def executequery():
+    data = request.get_json()
+    resData = []
+    resData.append(prepDataForFrontend(pg.execute_query(data.get('query'))))
+    return make_response(jsonify(resData), 200)
 
 
 if __name__ == "__main__":

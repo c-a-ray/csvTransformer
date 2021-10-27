@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, text, INTEGER
 from numpy import int64
-from pandas import DataFrame, read_csv
+from pandas import DataFrame, read_sql
 
 numpyDataTypeLkp = {
     int64: INTEGER
@@ -42,3 +42,8 @@ def init_table(df: DataFrame):
     colTypeLkp = getColumnsAndTypes(df)
     with pgEngine().connect() as conn:
         df.to_sql('temp', conn, if_exists='replace', dtype=colTypeLkp)
+
+
+def execute_query(query: str):
+    with pgEngine().connect() as conn:
+        return read_sql(query, conn)

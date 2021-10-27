@@ -1,9 +1,12 @@
 import React from "react";
+import { Button } from "reactstrap";
 
 function ContinueButton(props) {
-  return <button className="continue-btn" onClick={props.handleSubmission}>
-    CONTINUE
-    </button>;
+  return (
+    <Button className="continue-btn" onClick={props.handleSubmission}>
+      CONTINUE
+    </Button>
+  );
 }
 
 export default ContinueButton;
