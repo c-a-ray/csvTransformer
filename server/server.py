@@ -2,11 +2,9 @@ from flask import Flask, request, jsonify
 from flask.helpers import make_response, send_file
 from flask_cors import CORS
 from pandas import DataFrame, read_csv
+from validate import validate_csv
 import os
 import postgres as pg
-from numpy import float64, int64
-
-from pandas.core.frame import DataFrame
 
 app = Flask(__name__)
 CORS(app)
@@ -15,16 +13,24 @@ CORS(app)
 @app.route("/loadcsv", methods=['POST'])
 def loadcsv():
     res_data = []
+    res_code = 200
     try:
         file = request.files['File']
-        filepath = os.path.join(".", "data", file.filename)
+        filepath = os.path.join(os.getcwd(), "data", file.filename)
         file.save(filepath)
-        with open(filepath) as f:
-            res_data.append(prepDataForFrontend(read_csv(f)))
+        is_valid = validate_csv(filepath)
+        if is_valid:
+            with open(filepath) as f:
+                res_data.append(prepDataForFrontend(read_csv(f)))
+                res_data.append({'message': 'success'})
+        else:
+            res_data.append({'message': 'Invalid CSV'})
+            res_code = 422
     except:
         res_data.append({'message': 'Failed to load CSV'})
+        res_code = 500
 
-    return make_response(jsonify(res_data), 200)
+    return make_response(jsonify(res_data), res_code)
 
 
 def prepDataForFrontend(df: DataFrame):
@@ -80,7 +86,7 @@ def executequery():
 def download_csv():
     data = request.get_json()
     query = data.get('query')
-    pathToFile = os.path.join('.', 'data', 'transformed.csv')
+    pathToFile = os.path.join(os.getcwd(), 'data', 'transformed.csv')
     pg.create_downloadCSV(query, pathToFile)
     return send_file(pathToFile, as_attachment=True)
 

@@ -33,8 +33,17 @@ function App() {
     });
 
     var body = await response.json();
-    setData(prepData(body));
-    setCurrentStep(2);
+    switch (body[0]["message"]) {
+      case "Invalid CSV":
+        alert("CSV is invalid. Please upload a properly formatted file.");
+        break;
+      case "Failed to load CSV":
+        alert("Internal server error. Please try again.");
+        break;
+      default:
+        setData(prepData(body));
+        setCurrentStep(2);
+    }
   }
 
   const handleHasHeaderChange = () => {
