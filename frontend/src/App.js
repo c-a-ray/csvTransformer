@@ -3,6 +3,7 @@ import "./App.css";
 import FileUpload from "./components/FileUpload";
 import ConfigureData from "./components/ConfigureData";
 import Transform from "./components/Transform";
+import Header from "./components/Header";
 
 function App() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -11,6 +12,15 @@ function App() {
   const [hasHeader, setHasHeader] = useState(true);
   const [data, setData] = useState();
   const [query, setQuery] = useState();
+
+  function handleHeaderBtnClick() {
+    setCurrentStep(1);
+    setSelectedFile();
+    setIsSelected(false);
+    setHasHeader(true);
+    setData();
+    setQuery();
+  }
 
   const selectFile = (event) => {
     setSelectedFile(event.target.files[0]);
@@ -149,7 +159,7 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">CSV Transformer</header>
+      <Header handleHeaderBtnClick={handleHeaderBtnClick} />
 
       {getCurrentStep(currentStep)}
     </div>
