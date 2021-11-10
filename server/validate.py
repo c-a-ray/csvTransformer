@@ -2,7 +2,7 @@
 from subprocess import run
 from time import sleep, time
 from os.path import join, exists
-from os import getcwd
+from os import getcwd, remove
 from pandas import read_csv
 
 
@@ -20,4 +20,5 @@ def validate_csv(csv_path: str) -> bool:
         elapsed = time() - start
 
     result = read_csv(svc_output_path)
+    remove(svc_output_path)
     return bool(result['boolean'].loc[0])

@@ -228,7 +228,6 @@ def validate_query_columns(query: str) -> str:
     return ''
 
 
-
 def extract_sql_err(sql_err) -> str:
     err_str: str = str(sql_err)
     start_index = 0
@@ -247,7 +246,7 @@ def extract_sql_err(sql_err) -> str:
     return err_str[start_index:end_index]
 
 
-@ app.route("/downloadcsv", methods=['POST'])
+@app.route("/downloadcsv", methods=['POST'])
 def download_csv() -> Response:
     data = request.get_json()
     query = data.get('query')
