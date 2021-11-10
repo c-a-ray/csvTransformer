@@ -1,5 +1,6 @@
 """server.py: Endpoints for CSV Transformer"""
 
+from io import TextIOWrapper
 from os.path import join, exists
 from os import getcwd
 from flask import Flask, request, jsonify
@@ -7,6 +8,7 @@ from flask.helpers import make_response, send_file
 from flask.wrappers import Response
 from flask_cors import CORS
 from pandas import DataFrame, read_csv
+from csv import reader
 from werkzeug.datastructures import FileStorage
 from validate import validate_csv
 from sqlalchemy import exc
@@ -60,10 +62,14 @@ def loadcsv():
     try:
         file.save(filepath)
         if validate_csv(filepath):
-            with open(filepath, encoding='utf-8') as csv_file:
+            with open(filepath, 'r', encoding='utf-8') as csv_file:
+                col_types = get_col_types(csv_file, has_header)
+
+            with open(filepath, 'r', encoding='utf-8') as csv_file:
                 csv_data = read_csv(csv_file) if has_header else read_csv(
                     csv_file, header=None)
-                res_data.data = format_data_for_ui(csv_data, has_header)
+                res_data.data = format_data_for_ui(
+                    csv_data, has_header, col_types)
         else:
             res_data.fail(422, 'Invalid CSV. Please upload a valid CSV file.')
     except OSError as os_err:
@@ -74,7 +80,23 @@ def loadcsv():
     return make_response(jsonify(res), res['status'])
 
 
-def format_data_for_ui(csv_data: DataFrame, has_header: bool) -> dict:
+def get_col_types(csv_file: TextIOWrapper, has_header: bool) -> list:
+    r = reader(csv_file)
+    first_row: list = []
+    for i, line in enumerate(r):
+        if i == 0 and has_header:
+            continue
+        elif (i > 1 and has_header) or (i > 0 and not has_header):
+            break
+        first_row = line
+
+    return [type(item) for item in first_row]
+
+
+native_data_types = [bool, int, float, str, list]
+
+
+def format_data_for_ui(csv_data: DataFrame, has_header: bool, col_types: list) -> dict:
     """
     Takes a DataFrame and transforms it into a
     format that can be used by the UI.
@@ -100,7 +122,8 @@ def format_data_for_ui(csv_data: DataFrame, has_header: bool) -> dict:
 
     row_data: list = []
     for index, csv_row in csv_data.iterrows():
-        row: dict = {name: csv_row[name].item() for name in col_names}
+        row: dict = {col_name: col_types[col_idx](
+            csv_row[col_name]) for col_idx, col_name in enumerate(col_names)}
         row['id'] = int(index)
         row_data.append(row)
 
@@ -199,7 +222,9 @@ def executequery() -> Response:
         print(f'Executing: {query}')
 
     try:
-        ui_formatted_data = format_data_for_ui(execute_query(query), True)
+        raw_data = execute_query(query)
+        col_types = [type(item) for item in raw_data.iloc[0]]
+        ui_formatted_data = format_data_for_ui(raw_data, True, col_types)
     except exc.SQLAlchemyError as sql_err:
         print(f'Faled to execute query: {sql_err}')
         res_data.fail(
