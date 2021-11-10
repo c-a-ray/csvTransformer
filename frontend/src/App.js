@@ -21,6 +21,7 @@ function App() {
     setHasHeader(true);
     setData();
     setQuery();
+    setTableName("");
   }
 
   const selectFile = (event) => {
@@ -94,6 +95,11 @@ function App() {
       if (del) {
         colsToDelete.push(col);
       }
+    }
+
+    if (colsToDelete.length === data.columns.length) {
+      alert("Cannot create table with no columns");
+      return;
     }
 
     let reqBody = {
