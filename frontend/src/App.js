@@ -33,16 +33,11 @@ function App() {
     });
 
     var body = await response.json();
-    switch (body[0]["message"]) {
-      case "Invalid CSV":
-        alert("CSV is invalid. Please upload a properly formatted file.");
-        break;
-      case "Failed to load CSV":
-        alert("Internal server error. Please try again.");
-        break;
-      default:
-        setData(prepData(body));
-        setCurrentStep(2);
+    if (body["status"] == 200) {
+      setData(prepData(body["data"]));
+      setCurrentStep(2);
+    } else {
+      alert(body["error"]);
     }
   }
 
@@ -51,8 +46,8 @@ function App() {
   };
 
   function prepData(data) {
-    let columns = data[0].columns;
-    let rows = data[0].rowData;
+    let columns = data.columns;
+    let rows = data.rowData;
     let col_names = [];
     for (let i = 0; i < columns.length; i++) {
       col_names.push(columns[i].name);
@@ -80,10 +75,10 @@ function App() {
     });
 
     let body = await response.json();
-    if (body["success"] == 1) {
+    if (body["status"] == 200) {
       setCurrentStep(3);
     } else {
-      alert("Failed to insert into PostgreSQL DB");
+      alert(body["error"]);
     }
   }
 
@@ -96,7 +91,11 @@ function App() {
     });
 
     let body = await response.json();
-    setData(prepData(body));
+    if (body["status"] == 200) {
+      setData(prepData(body["data"]));
+    } else {
+      alert(body["error"]);
+    }
   }
 
   async function handleDownloadClick(query) {

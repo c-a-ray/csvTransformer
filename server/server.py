@@ -1,94 +1,233 @@
+"""server.py: Endpoints for CSV Transformer"""
+
+from os.path import join, exists
+from os import getcwd
 from flask import Flask, request, jsonify
 from flask.helpers import make_response, send_file
+from flask.wrappers import Response
 from flask_cors import CORS
 from pandas import DataFrame, read_csv
+from werkzeug.datastructures import FileStorage
 from validate import validate_csv
-import os
-import postgres as pg
+from sqlalchemy import exc
+from postgres import init_table, execute_query, create_download_csv
 
 app = Flask(__name__)
 CORS(app)
 
 
+class ResponseData:
+    def __init__(self) -> None:
+        self.success: bool = True
+        self.status: int = 200
+        self.error: str = ''
+        self.data: dict = {}
+
+    def fail(self, status: int, error: str) -> None:
+        self.success = False
+        self.status = status
+        self.error = error
+
+    def set_data(self, data: dict) -> None:
+        self.data = data
+
+    def get_response_dict(self) -> dict:
+        return {
+            'success': self.success,
+            'status': self.status,
+            'error': self.error,
+            'data': self.data
+        }
+
+
 @app.route("/loadcsv", methods=['POST'])
 def loadcsv():
-    res_data = []
-    res_code = 200
+    """
+    Gets file from request, tests that it is valid by
+    calling the CSVChecker microservice, and if valid
+    formats data for UI display and sends it to frontend.
+
+    Returns:
+        Response: HTTP response containing data or error
+    """
+
+    res_data = ResponseData()
+
     try:
-        file = request.files['File']
-        filepath = os.path.join(os.getcwd(), "data", file.filename)
+        file: FileStorage = request.files['File']
+        filepath: str = join(getcwd(), "data", file.filename)
         file.save(filepath)
-        is_valid = validate_csv(filepath)
-        if is_valid:
-            with open(filepath) as f:
-                res_data.append(prepDataForFrontend(read_csv(f)))
-                res_data.append({'message': 'success'})
+
+        if validate_csv(filepath):
+            with open(filepath, encoding='utf-8') as csv_file:
+                res_data.data = format_data_for_ui(read_csv(csv_file))
         else:
-            res_data.append({'message': 'Invalid CSV'})
-            res_code = 422
-    except:
-        res_data.append({'message': 'Failed to load CSV'})
-        res_code = 500
+            res_data.fail(422, 'Invalid CSV. Please upload a valid CSV file.')
+    except OSError as os_err:
+        res_data.fail(500, 'Server Error: Failed to load CSV')
+        print(f'Failed to load CSV: {os_err.strerror}')
 
-    return make_response(jsonify(res_data), res_code)
+    res = res_data.get_response_dict()
+    return make_response(jsonify(res), res['status'])
 
 
-def prepDataForFrontend(df: DataFrame):
-    col_names = df.columns.tolist()
-    columns = []
-    for name in col_names:
-        columns.append({'name': name})
+def format_data_for_ui(csv_data: DataFrame) -> dict:
+    """
+    Takes a DataFrame and transforms it into a
+    format that can be used by the UI.
 
-    row_data = []
-    for index, row in df.iterrows():
-        r = {}
-        r['id'] = int(index)
-        for name in col_names:
-            r[name] = row[name]
-        row_data.append(r)
+    Args:
+        csv_data (DataFrame): DataFrame containing data read from CSV
+
+    Returns:
+        dict: Data formatted for UI.
+    """
+
+    col_names: list = replace_bad_col_names(csv_data)
+    columns: list = [{'name': name} for name in col_names]
+
+    row_data: list = []
+    for index, csv_row in csv_data.iterrows():
+        row: dict = {name: csv_row[name] for name in col_names}
+        row['id'] = int(index)
+        row_data.append(row)
 
     return {'columns': columns, 'rowData': row_data}
 
 
+def replace_bad_col_names(data: DataFrame) -> list:
+    col_names: list = []
+    for i, column in enumerate(data.columns):
+        if column == '?column?':
+            col_names.append(f'Column{i}')
+        else:
+            col_names.append(column)
+    data.columns = col_names
+    return col_names
+
+
 @app.route("/insertsql", methods=['POST'])
-def insertsql():
-    pg.init_table(compileDF(request.get_json()))
-    return make_response(jsonify({"success": 1}), 200)
+def insertsql() -> Response:
+    """
+    Convert UI formatted data back into a DataFrame
+    and create a new database table containing the data.
+
+    Returns:
+        Response: HTTP response
+    """
+
+    res_data = ResponseData()
+
+    try:
+        init_table(reconstruct_dataframe(request.get_json()))
+    except exc.SQLAlchemyError as sql_err:
+        print(f'Failed to create table: {sql_err}')
+        res_data.fail(500, 'Failed to create SQL table')
+
+    res = res_data.get_response_dict()
+    return make_response(jsonify(res), res['status'])
 
 
-def compileDF(data) -> DataFrame:
-    cols = data['columns']
-    col_lkp = {}
-    for i, col in enumerate(cols):
-        col_lkp[i] = col
+def reconstruct_dataframe(ui_data: dict) -> DataFrame:
+    """
+    Converts UI formatted data into a DataFrame.
 
-    rows = {}
-    for row in data['rows']:
-        r = {}
-        for i, item in enumerate(row['items']):
-            r[col_lkp[i]] = item
-        rows[row['id']] = r
+    Args:
+        ui_data (dict): UI formatted data
 
-    return DataFrame.from_dict(data=rows).T
+    Returns:
+        DataFrame: DataFrame containing same data as ui_data
+    """
+
+    column_lookup: dict = create_column_lookup(ui_data['columns'])
+
+    df_rows: dict = {}
+    for ui_data_row in ui_data['rows']:
+        df_rows[ui_data_row['id']] = {column_lookup[index]: item for index,
+                                      item in enumerate(ui_data_row['items'])}
+
+    return DataFrame.from_dict(data=df_rows).T
 
 
-@app.route("/executequery", methods=['POST'])
-def executequery():
-    data = request.get_json()
-    query = f"""{ data.get('query')}"""
+def create_column_lookup(ui_data_columns: list) -> dict:
+    """
+    Create a dictionary lookup of column index to column name.
+
+    Args:
+        ui_data_columns (list): List of column names.
+
+    Returns:
+        dict: Lookup of column index to column name for all names in ui_data_columns
+    """
+    return {index: column for index, column in enumerate(ui_data_columns)}
+
+
+@ app.route("/executequery", methods=['POST'])
+def executequery() -> Response:
+    """
+    Executes the query specified in the request on the database.
+
+    Returns:
+        Response: HTTP response containing query results
+                  formatted for UI or error if execution failed.
+    """
+    data: dict = request.get_json()
+    query: str = f"{data.get('query')}"
     print(f'Executing: {query}')
-    resData = []
-    resData.append(prepDataForFrontend(pg.execute_query(query)))
-    return make_response(jsonify(resData), 200)
+
+    res_data = ResponseData()
+
+    try:
+        ui_formatted_data = format_data_for_ui(execute_query(query))
+    except exc.SQLAlchemyError as sql_err:
+        print(f'Faled to execute query: {sql_err}')
+        res_data.fail(
+            500, f'Failed to execute query:\n\n{extract_sql_err(sql_err)}')
+    else:
+        if len(ui_formatted_data) == 0:
+            print('Invalid query')
+            res_data.fail(
+                500, 'Invalid query. Selected columns must have names.')
+        else:
+            res_data.set_data(ui_formatted_data)
+
+    res = res_data.get_response_dict()
+    return make_response(jsonify(res), res['status'])
 
 
-@app.route("/downloadcsv", methods=['POST'])
-def download_csv():
+def extract_sql_err(sql_err) -> str:
+    err_str: str = str(sql_err)
+    start_index = 0
+    end_index = 0
+    for i, c in enumerate(err_str):
+        if c == ')':
+            start_index = i + 2
+            break
+
+    for i, c in enumerate(err_str):
+        if c == '(':
+            end_index = i - 2
+
+    print(start_index)
+    print(end_index)
+    return err_str[start_index:end_index]
+
+
+@ app.route("/downloadcsv", methods=['POST'])
+def download_csv() -> Response:
     data = request.get_json()
     query = data.get('query')
-    pathToFile = os.path.join(os.getcwd(), 'data', 'transformed.csv')
-    pg.create_downloadCSV(query, pathToFile)
-    return send_file(pathToFile, as_attachment=True)
+    path_to_download_file = join(getcwd(), 'data', 'transformed.csv')
+    create_download_csv(query, path_to_download_file)
+
+    res_data = ResponseData()
+    if exists(path_to_download_file):
+        return send_file(path_to_download_file, as_attachment=True)
+    else:
+        res_data.fail(500, 'Unable to download file')
+
+    res = res_data.get_response_dict()
+    return make_response(jsonify(res), res['status'])
 
 
 if __name__ == "__main__":
