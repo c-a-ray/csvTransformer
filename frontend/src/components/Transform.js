@@ -26,7 +26,7 @@ function Transform(props) {
     <div>
       <span>
         <Card>
-          <CardHeader>Table: temp</CardHeader>
+          <CardHeader>Table name: {props.tableName}</CardHeader>
           <CardBody>
             <RenderData data={props.data} />
           </CardBody>

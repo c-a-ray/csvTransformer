@@ -152,9 +152,10 @@ def insertsql() -> Response:
     """
 
     res_data = ResponseData()
+    req = request.get_json()
 
     try:
-        init_table(reconstruct_dataframe(request.get_json()))
+        init_table(reconstruct_dataframe(req['data']), req['tableName'])
     except exc.SQLAlchemyError as sql_err:
         print(f'Failed to create table: {sql_err}')
         res_data.fail(500, 'Failed to create SQL table')

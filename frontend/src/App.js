@@ -8,15 +8,16 @@ import Header from "./components/Header";
 function App() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedFile, setSelectedFile] = useState();
-  const [isSelected, setIsSelected] = useState(false);
+  const [isFileSelected, setIsFileSelected] = useState(false);
   const [hasHeader, setHasHeader] = useState(true);
   const [data, setData] = useState();
   const [query, setQuery] = useState();
+  const [tableName, setTableName] = useState("");
 
   function handleHeaderBtnClick() {
     setCurrentStep(1);
     setSelectedFile();
-    setIsSelected(false);
+    setIsFileSelected(false);
     setHasHeader(true);
     setData();
     setQuery();
@@ -24,11 +25,11 @@ function App() {
 
   const selectFile = (event) => {
     setSelectedFile(event.target.files[0]);
-    setIsSelected(true);
+    setIsFileSelected(true);
   };
 
   async function uploadFile() {
-    if (!isSelected || !selectedFile) {
+    if (!isFileSelected || !selectedFile) {
       alert("Please select a CSV file to upload");
       return;
     }
@@ -78,19 +79,30 @@ function App() {
     return { columns: col_names, rows: prepared_rows };
   }
 
-  async function handleContinue() {
+  async function handleConfigureComplete() {
+    if (tableName.length == 0) {
+      alert("Please enter a table name");
+      return;
+    }
+    if (!tableName.match(/^[A-Za-z]+$/)) {
+      alert("Table name can only contain letters");
+      return;
+    }
+
+    let reqBody = { data: data, tableName: tableName };
+
     const response = await fetch("http://127.0.0.1:8080/insertsql", {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify(reqBody),
       mode: "cors",
       headers: { "Content-Type": "application/json" },
     });
 
-    let body = await response.json();
-    if (body["status"] === 200) {
+    let resBody = await response.json();
+    if (resBody["status"] === 200) {
       setCurrentStep(3);
     } else {
-      alert(body["error"]);
+      alert(resBody["error"]);
     }
   }
 
@@ -103,8 +115,6 @@ function App() {
     });
 
     let body = await response.json();
-    console.log("BODY: ");
-    console.log(JSON.stringify(body, null, 2));
     if (body["status"] === 200) {
       setData(prepData(body["data"]));
     } else {
@@ -137,13 +147,21 @@ function App() {
             selectFile={selectFile}
             selectedFile={selectedFile}
             uploadFile={uploadFile}
-            isSelected={isSelected}
+            isSelected={isFileSelected}
             hasHeader={hasHeader}
             handleCheckboxChange={handleHasHeaderChange}
           />
         );
       case 2:
-        return <ConfigureData data={data} onContinue={handleContinue} />;
+        return (
+          <ConfigureData
+            data={data}
+            onContinue={handleConfigureComplete}
+            filename={selectedFile.name}
+            tableName={tableName}
+            setTableName={setTableName}
+          />
+        );
       case 3:
         return (
           <Transform
@@ -152,6 +170,7 @@ function App() {
             setQuery={setQuery}
             query={query}
             handleDownloadClick={handleDownloadClick}
+            tableName={tableName}
           />
         );
     }
@@ -159,7 +178,10 @@ function App() {
 
   return (
     <div className="App">
-      <Header handleHeaderBtnClick={handleHeaderBtnClick} />
+      <Header
+        handleHeaderBtnClick={handleHeaderBtnClick}
+        isFileSelected={isFileSelected}
+      />
 
       {getCurrentStep(currentStep)}
     </div>
