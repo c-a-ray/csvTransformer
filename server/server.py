@@ -146,7 +146,9 @@ def reconstruct_dataframe(ui_data: dict) -> DataFrame:
         df_rows[ui_data_row['id']] = {column_lookup[index]: item for index,
                                       item in enumerate(ui_data_row['items'])}
 
-    return DataFrame.from_dict(data=df_rows).T
+    df: DataFrame = DataFrame.from_dict(data=df_rows).T
+    df.columns = [col.lower() for col in df.columns]
+    return df
 
 
 def create_column_lookup(ui_data_columns: list) -> dict:
@@ -162,7 +164,7 @@ def create_column_lookup(ui_data_columns: list) -> dict:
     return {index: column for index, column in enumerate(ui_data_columns)}
 
 
-@ app.route("/executequery", methods=['POST'])
+@app.route("/executequery", methods=['POST'])
 def executequery() -> Response:
     """
     Executes the query specified in the request on the database.
@@ -171,11 +173,18 @@ def executequery() -> Response:
         Response: HTTP response containing query results
                   formatted for UI or error if execution failed.
     """
-    data: dict = request.get_json()
-    query: str = f"{data.get('query')}"
-    print(f'Executing: {query}')
-
     res_data = ResponseData()
+
+    data: dict = request.get_json()
+    query: str = f"{data.get('query')}".lower()
+
+    err: str = validate_query_columns(query)
+    if len(err) > 0:
+        res_data.fail(500, f'Failed to execute query: {err}')
+        res = res_data.get_response_dict()
+        return make_response(jsonify(res), res['status'])
+    else:
+        print(f'Executing: {query}')
 
     try:
         ui_formatted_data = format_data_for_ui(execute_query(query))
@@ -193,6 +202,31 @@ def executequery() -> Response:
 
     res = res_data.get_response_dict()
     return make_response(jsonify(res), res['status'])
+
+
+def validate_query_columns(query: str) -> str:
+    try:
+        start_idx = query.index('select') + len('select')
+    except ValueError:
+        return 'Missing a SELECT clause'
+
+    if start_idx != len('select'):
+        return 'Invalid SELECT clause'
+
+    try:
+        end_idx = query.index('from')
+    except ValueError:
+        return 'Missing FROM clause'
+
+    select_str = query[start_idx:end_idx]
+    select_list = select_str.split(',')
+
+    select_list = [item.strip() for item in select_list]
+    if len(select_list) != len(set(select_list)):
+        return 'The same column cannot be selected twice'
+
+    return ''
+
 
 
 def extract_sql_err(sql_err) -> str:

@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardBody, CardHeader, Table } from "reactstrap";
+import { Table } from "reactstrap";
 
 function RenderData(props) {
   const TableHeadItem = ({ item }) => {

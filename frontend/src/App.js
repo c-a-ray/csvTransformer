@@ -33,7 +33,7 @@ function App() {
     });
 
     var body = await response.json();
-    if (body["status"] == 200) {
+    if (body["status"] === 200) {
       setData(prepData(body["data"]));
       setCurrentStep(2);
     } else {
@@ -46,21 +46,22 @@ function App() {
   };
 
   function prepData(data) {
-    let columns = data.columns;
-    let rows = data.rowData;
     let col_names = [];
-    for (let i = 0; i < columns.length; i++) {
-      col_names.push(columns[i].name);
+    for (let col_idx = 0; col_idx < data.columns.length; col_idx++) {
+      col_names.push(data.columns[col_idx].name);
     }
-    col_names.sort();
 
     let prepared_rows = [];
-    for (let i = 0; i < rows.length; i++) {
-      let r = [];
-      for (let k = 0; k < col_names.length; k++) {
-        r.push(rows[i][col_names[k]]);
+    let raw_row;
+    let prepared_row;
+
+    for (let row_idx = 0; row_idx < data.rowData.length; row_idx++) {
+      raw_row = data.rowData[row_idx];
+      prepared_row = [];
+      for (let col_name of col_names) {
+        prepared_row.push(raw_row[col_name]);
       }
-      prepared_rows.push({ id: rows[i].id, items: r });
+      prepared_rows.push({ id: raw_row.id, items: prepared_row });
     }
 
     return { columns: col_names, rows: prepared_rows };
@@ -75,7 +76,7 @@ function App() {
     });
 
     let body = await response.json();
-    if (body["status"] == 200) {
+    if (body["status"] === 200) {
       setCurrentStep(3);
     } else {
       alert(body["error"]);
@@ -91,7 +92,9 @@ function App() {
     });
 
     let body = await response.json();
-    if (body["status"] == 200) {
+    console.log("BODY: ");
+    console.log(JSON.stringify(body, null, 2));
+    if (body["status"] === 200) {
       setData(prepData(body["data"]));
     } else {
       alert(body["error"]);
