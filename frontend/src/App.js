@@ -79,7 +79,7 @@ function App() {
     return { columns: col_names, rows: prepared_rows };
   }
 
-  async function handleConfigureComplete() {
+  async function handleConfigureComplete(columnsToDelete) {
     if (tableName.length == 0) {
       alert("Please enter a table name");
       return;
@@ -89,7 +89,18 @@ function App() {
       return;
     }
 
-    let reqBody = { data: data, tableName: tableName };
+    let colsToDelete = [];
+    for (const [col, del] of Object.entries(columnsToDelete)) {
+      if (del) {
+        colsToDelete.push(col);
+      }
+    }
+
+    let reqBody = {
+      data: data,
+      tableName: tableName,
+      columnsToDelete: colsToDelete,
+    };
 
     const response = await fetch("http://127.0.0.1:8080/insertsql", {
       method: "POST",
@@ -100,6 +111,7 @@ function App() {
 
     let resBody = await response.json();
     if (resBody["status"] === 200) {
+      setData(prepData(resBody["data"]));
       setCurrentStep(3);
     } else {
       alert(resBody["error"]);

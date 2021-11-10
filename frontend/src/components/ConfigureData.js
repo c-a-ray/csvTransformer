@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardBody,
@@ -12,13 +12,35 @@ import RenderData from "./RenderData";
 import "../styles/ConfigureData.css";
 
 function ConfigureData(props) {
+  const [columnsToDelete, setColumnsToDelete] = useState(createDeleteColDict());
+
+  function createDeleteColDict() {
+    let deleteColDict = {};
+    for (let col of props.data.columns) {
+      deleteColDict[col] = false;
+    }
+    return deleteColDict;
+  }
+
+  const handleCheckboxChange = (e) => {
+    setColumnsToDelete((prevCols) => ({
+      ...prevCols,
+      [e.target.id]: e.target.checked,
+    }));
+  };
+
   const ColumnCheckbox = ({ column }) => {
     return (
       <div>
         <Label check className="col-checkbox-label">
           {column}
         </Label>
-        <Input type="checkbox" />
+        <Input
+          type="checkbox"
+          id={column}
+          onChange={handleCheckboxChange}
+          checked={columnsToDelete[column]}
+        />
       </div>
     );
   };
@@ -54,7 +76,10 @@ function ConfigureData(props) {
           </CardBody>
         </Card>
       </span>
-      <Button className="continue-btn" onClick={() => props.onContinue()}>
+      <Button
+        className="continue-btn"
+        onClick={() => props.onContinue(columnsToDelete)}
+      >
         CONTINUE
       </Button>
     </div>

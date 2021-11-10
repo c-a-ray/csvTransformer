@@ -155,16 +155,22 @@ def insertsql() -> Response:
     req = request.get_json()
 
     try:
-        init_table(reconstruct_dataframe(req['data']), req['tableName'])
+        init_table(reconstruct_dataframe(
+            req['data'], req['columnsToDelete']), req['tableName'])
+        raw_data = execute_query(f'SELECT * FROM {req["tableName"]}')
+        col_types = [type(item) for item in raw_data.iloc[0]]
+        ui_formatted_data = format_data_for_ui(raw_data, True, col_types)
     except exc.SQLAlchemyError as sql_err:
         print(f'Failed to create table: {sql_err}')
         res_data.fail(500, 'Failed to create SQL table')
+    else:
+        res_data.set_data(ui_formatted_data)
 
     res = res_data.get_response_dict()
     return make_response(jsonify(res), res['status'])
 
 
-def reconstruct_dataframe(ui_data: dict) -> DataFrame:
+def reconstruct_dataframe(ui_data: dict, do_not_include: list) -> DataFrame:
     """
     Converts UI formatted data into a DataFrame.
 
@@ -184,6 +190,10 @@ def reconstruct_dataframe(ui_data: dict) -> DataFrame:
 
     df: DataFrame = DataFrame.from_dict(data=df_rows).T
     df.columns = [col.lower() for col in df.columns]
+
+    for col in do_not_include:
+        del df[col]
+
     return df
 
 
