@@ -93,14 +93,14 @@ def format_data_for_ui(csv_data: DataFrame, has_header: bool) -> dict:
         col_names = replace_bad_col_names(csv_data)
     else:
         for col_idx in range(len(csv_data.columns)):
-            col_names.append(f'Column{col_idx}')
+            col_names.append(f'column{col_idx}')
 
     csv_data.columns = col_names
     columns: list = [{'name': name} for name in col_names]
 
     row_data: list = []
     for index, csv_row in csv_data.iterrows():
-        row: dict = {name: csv_row[name] for name in col_names}
+        row: dict = {name: csv_row[name].item() for name in col_names}
         row['id'] = int(index)
         row_data.append(row)
 
@@ -111,14 +111,14 @@ def replace_bad_col_names(data: DataFrame) -> list:
     col_names: list = []
     for i, column in enumerate(data.columns):
         if column == '?column?':
-            col_names.append(f'Column{i}')
+            col_names.append(f'column{i}')
         else:
-            col_names.append(column)
+            col_names.append(column.lower().strip())
     data.columns = col_names
     return col_names
 
 
-@ app.route("/insertsql", methods=['POST'])
+@app.route("/insertsql", methods=['POST'])
 def insertsql() -> Response:
     """
     Convert UI formatted data back into a DataFrame
