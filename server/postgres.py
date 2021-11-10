@@ -27,7 +27,7 @@ def format_columns(col_type_lkp: dict) -> str:
 
 def init_table(df: DataFrame):
     with pg_engine().connect() as conn:
-        df.to_sql('temp', conn, if_exists='replace')
+        df.to_sql('temp', conn, if_exists='replace', index=False)
 
 
 def execute_query(query: str):
