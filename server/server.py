@@ -53,14 +53,17 @@ def loadcsv():
 
     res_data = ResponseData()
 
-    try:
-        file: FileStorage = request.files['File']
-        filepath: str = join(getcwd(), "data", file.filename)
-        file.save(filepath)
+    has_header: bool = request.values['HasHeader'].lower() == 'true'
+    file: FileStorage = request.files['File']
+    filepath: str = join(getcwd(), "data", file.filename)
 
+    try:
+        file.save(filepath)
         if validate_csv(filepath):
             with open(filepath, encoding='utf-8') as csv_file:
-                res_data.data = format_data_for_ui(read_csv(csv_file))
+                csv_data = read_csv(csv_file) if has_header else read_csv(
+                    csv_file, header=None)
+                res_data.data = format_data_for_ui(csv_data, has_header)
         else:
             res_data.fail(422, 'Invalid CSV. Please upload a valid CSV file.')
     except OSError as os_err:
@@ -71,19 +74,28 @@ def loadcsv():
     return make_response(jsonify(res), res['status'])
 
 
-def format_data_for_ui(csv_data: DataFrame) -> dict:
+def format_data_for_ui(csv_data: DataFrame, has_header: bool) -> dict:
     """
     Takes a DataFrame and transforms it into a
     format that can be used by the UI.
 
     Args:
         csv_data (DataFrame): DataFrame containing data read from CSV
+        has_header (bool): True if the CSV data has a header row, else False
 
     Returns:
         dict: Data formatted for UI.
     """
 
-    col_names: list = replace_bad_col_names(csv_data)
+    col_names: list = []
+
+    if has_header:
+        col_names = replace_bad_col_names(csv_data)
+    else:
+        for col_idx in range(len(csv_data.columns)):
+            col_names.append(f'Column{col_idx}')
+
+    csv_data.columns = col_names
     columns: list = [{'name': name} for name in col_names]
 
     row_data: list = []
@@ -106,7 +118,7 @@ def replace_bad_col_names(data: DataFrame) -> list:
     return col_names
 
 
-@app.route("/insertsql", methods=['POST'])
+@ app.route("/insertsql", methods=['POST'])
 def insertsql() -> Response:
     """
     Convert UI formatted data back into a DataFrame
@@ -164,7 +176,7 @@ def create_column_lookup(ui_data_columns: list) -> dict:
     return {index: column for index, column in enumerate(ui_data_columns)}
 
 
-@app.route("/executequery", methods=['POST'])
+@ app.route("/executequery", methods=['POST'])
 def executequery() -> Response:
     """
     Executes the query specified in the request on the database.
@@ -246,7 +258,7 @@ def extract_sql_err(sql_err) -> str:
     return err_str[start_index:end_index]
 
 
-@app.route("/downloadcsv", methods=['POST'])
+@ app.route("/downloadcsv", methods=['POST'])
 def download_csv() -> Response:
     data = request.get_json()
     query = data.get('query')

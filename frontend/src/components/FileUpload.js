@@ -14,10 +14,15 @@ function FileUpload(props) {
       ) : (
         <p>Select a CSV file to transform</p>
       )}
-      {/* <label>
-                <input type="checkbox" name="hasHeader" checked={props.hasHeader} onChange={props.handleCheckboxChange} />
-                CSV has header row
-            </label> */}
+      <label>
+        <input
+          type="checkbox"
+          name="hasHeader"
+          checked={props.hasHeader}
+          onChange={props.handleCheckboxChange}
+        />
+        CSV has header row
+      </label>
 
       <div>
         <ContinueButton handleSubmission={props.uploadFile} />
