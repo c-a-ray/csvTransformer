@@ -1,5 +1,6 @@
 import React from "react";
 import { Table } from "reactstrap";
+import "../styles/RenderData.css";
 
 function RenderData(props) {
   const TableHeadItem = ({ item }) => {
@@ -18,20 +19,22 @@ function RenderData(props) {
 
   const DataTable = (data) => {
     return (
-      <Table>
-        <thead>
-          <tr>
-            {data.data.columns.map((c) => {
-              return <TableHeadItem item={c} />;
+      <div className="data-table">
+        <Table>
+          <thead>
+            <tr>
+              {data.data.columns.map((c) => {
+                return <TableHeadItem item={c} />;
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {data.data.rows.map((item) => {
+              return <TableRow key={item.id} items={item.items} />;
             })}
-          </tr>
-        </thead>
-        <tbody>
-          {data.data.rows.map((item) => {
-            return <TableRow key={item.id} items={item.items} />;
-          })}
-        </tbody>
-      </Table>
+          </tbody>
+        </Table>
+      </div>
     );
   };
 
