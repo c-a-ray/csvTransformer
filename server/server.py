@@ -176,7 +176,7 @@ def create_column_lookup(ui_data_columns: list) -> dict:
     return {index: column for index, column in enumerate(ui_data_columns)}
 
 
-@ app.route("/executequery", methods=['POST'])
+@app.route("/executequery", methods=['POST'])
 def executequery() -> Response:
     """
     Executes the query specified in the request on the database.
@@ -199,7 +199,7 @@ def executequery() -> Response:
         print(f'Executing: {query}')
 
     try:
-        ui_formatted_data = format_data_for_ui(execute_query(query))
+        ui_formatted_data = format_data_for_ui(execute_query(query), True)
     except exc.SQLAlchemyError as sql_err:
         print(f'Faled to execute query: {sql_err}')
         res_data.fail(
