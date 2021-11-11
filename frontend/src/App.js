@@ -11,13 +11,14 @@ function App() {
   const [isFileSelected, setIsFileSelected] = useState(false);
   const [hasHeader, setHasHeader] = useState(true);
   const [data, setData] = useState();
-  const [query, setQuery] = useState();
+  const [query, setQuery] = useState("");
   const [tableName, setTableName] = useState("");
 
   function handleHeaderBtnClick() {
     setCurrentStep(1);
     setSelectedFile();
     setIsFileSelected(false);
+    setSelectedFile();
     setHasHeader(true);
     setData();
     setQuery();
@@ -140,10 +141,10 @@ function App() {
     }
   }
 
-  async function handleDownloadClick(query) {
+  async function handleDownloadClick() {
     const response = await fetch("http://127.0.0.1:8080/downloadcsv", {
       method: "POST",
-      body: JSON.stringify({ query: query }),
+      body: JSON.stringify({ query: query, tableName: tableName }),
       mode: "cors",
       headers: { "Content-Type": "application/json" },
     });
