@@ -82,7 +82,7 @@ function App() {
   }
 
   async function handleConfigureComplete(columnsToDelete) {
-    if (tableName.length == 0) {
+    if (tableName.length === 0) {
       alert("Please enter a table name");
       return;
     }

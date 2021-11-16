@@ -29,7 +29,7 @@ function ConfigureData(props) {
     }));
   };
 
-  const ColumnCheckbox = ({ column }) => {
+  const ColumnCheckbox = ({ column, key }) => {
     return (
       <div>
         <Label check className="col-checkbox-label">
@@ -38,6 +38,7 @@ function ConfigureData(props) {
         <Input
           type="checkbox"
           id={column}
+          key={key}
           onChange={handleCheckboxChange}
           checked={columnsToDelete[column]}
         />
@@ -64,12 +65,12 @@ function ConfigureData(props) {
             <InputGroup className="cfg-input-wrapper">
               <div className="cfg-txt-input">
                 <Label>Enter table name</Label>
-                <Input type="text" size="sm" onChange={handleTableNameUpdate} />
+                <Input type="text" bsSize="sm" onChange={handleTableNameUpdate} />
               </div>
               <div className="cfg-del-cols">
                 <Label>Select columns to delete</Label>
-                {props.data.columns.map((col) => {
-                  return <ColumnCheckbox column={col} />;
+                {props.data.columns.map((col, index) => {
+                  return <ColumnCheckbox column={col} key={index} />;
                 })}
               </div>
             </InputGroup>

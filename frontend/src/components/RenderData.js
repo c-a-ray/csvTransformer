@@ -1,36 +1,38 @@
-import React from "react";
+import React, { memo } from "react";
 import { Table } from "reactstrap";
 import "../styles/RenderData.css";
 
 function RenderData(props) {
-  const TableHeadItem = ({ item }) => {
-    return <td title={item}>{item}</td>;
+  const data = props.data;
+
+  const TableHeadItem = ({ item, key }) => {
+    return <td title={item} key={key}>{item}</td>;
   };
 
   const TableRow = ({ items, key }) => {
     return (
-      <tr>
-        {items.map((item) => {
-          return <td key={key}>{item}</td>;
+      <tr key={key}>
+        {items.map((item, index) => {
+          return <td key={index}>{item}</td>;
         })}
       </tr>
     );
   };
 
-  const DataTable = (data) => {
+  const DataTable = () => {
     return (
       <div className="data-table">
         <Table>
           <thead>
             <tr>
-              {data.data.columns.map((c) => {
-                return <TableHeadItem item={c} />;
+              {data.columns.map((col, index) => {
+                return <TableHeadItem item={col} key={index} />;
               })}
             </tr>
           </thead>
           <tbody>
-            {data.data.rows.map((item) => {
-              return <TableRow key={item.id} items={item.items} />;
+            {data.rows.map((row) => {
+              return <TableRow items={row.items} key={row.id} />;
             })}
           </tbody>
         </Table>
@@ -41,4 +43,4 @@ function RenderData(props) {
   return <DataTable data={props.data} />;
 }
 
-export default RenderData;
+export default memo(RenderData);
