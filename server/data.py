@@ -202,7 +202,7 @@ def get_query_data(query: str, res_data: ResponseData):
         res_data (ResponseData): Object to hold data for the response
     """
     raw_data: DataFrame = execute_query(query, res_data)
-    if raw_data:
+    if not raw_data.empty:
         col_types: list = [type(item) for item in raw_data.iloc[0]]
         res_data.set_data(format_data_for_ui(raw_data, True, col_types))
 

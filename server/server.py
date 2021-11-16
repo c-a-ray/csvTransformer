@@ -17,7 +17,7 @@ app = Flask(__name__)
 CORS(app)
 
 
-@app.route("/loadcsv", methods=['POST'])
+@app.route('/loadcsv', methods=['POST'])
 def loadcsv() -> Response:
     """
     Gets file from request, tests that it is valid by
@@ -44,7 +44,7 @@ def loadcsv() -> Response:
     return make_response(jsonify(res), res['status'])
 
 
-@app.route("/insertsql", methods=['POST'])
+@app.route('/insertsql', methods=['POST'])
 def insertsql() -> Response:
     """
     Convert UI formatted data back into a DataFrame
@@ -66,7 +66,7 @@ def insertsql() -> Response:
     return make_response(jsonify(res), res['status'])
 
 
-@app.route("/executequery", methods=['POST'])
+@app.route('/executequery', methods=['POST'])
 def executequery() -> Response:
     """
     Executes the query specified in the request on the database.
@@ -92,7 +92,7 @@ def executequery() -> Response:
     return make_response(jsonify(res), res['status'])
 
 
-@app.route("/downloadcsv", methods=['POST'])
+@app.route('/downloadcsv', methods=['POST'])
 def download_csv() -> Response:
     """
     Creates a CSV to download containing the

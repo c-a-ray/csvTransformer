@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from pandas import DataFrame, read_sql
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -42,6 +42,13 @@ def init_table(df: DataFrame, table_name: str, res_data: ResponseData) -> bool:
     """
     try:
         with pg_engine().connect() as conn:
+            # Re-create schema so no tables are left over
+            conn.execute('DROP SCHEMA public CASCADE')
+            conn.execute('CREATE SCHEMA public')
+            conn.execute('GRANT ALL ON SCHEMA public TO postgres')
+            conn.execute('GRANT ALL ON SCHEMA public TO public')
+
+            # Create table with data in df
             df.to_sql(table_name.lower(), conn,
                       if_exists='replace', index=False)
     except SQLAlchemyError as sql_err:
@@ -70,7 +77,7 @@ def execute_query(query: str, res_data: ResponseData) -> DataFrame:
         print(f'Error in execute_query: {sql_err}')
         res_data.fail(
             500, f'Failed to execute query:\n\n{extract_sql_err(sql_err)}')
-        return None
+        return DataFrame()
 
 
 def write_query_to_csv(query: str, path_to_file: str, res_data: ResponseData):
