@@ -202,8 +202,9 @@ def get_query_data(query: str, res_data: ResponseData):
         res_data (ResponseData): Object to hold data for the response
     """
     raw_data: DataFrame = execute_query(query, res_data)
-    col_types: list = [type(item) for item in raw_data.iloc[0]]
-    res_data.set_data(format_data_for_ui(raw_data, True, col_types))
+    if raw_data:
+        col_types: list = [type(item) for item in raw_data.iloc[0]]
+        res_data.set_data(format_data_for_ui(raw_data, True, col_types))
 
 
 def initialize_table(data: DataFrame, table_name: str, res_data: ResponseData):

@@ -70,6 +70,7 @@ def execute_query(query: str, res_data: ResponseData) -> DataFrame:
         print(f'Error in execute_query: {sql_err}')
         res_data.fail(
             500, f'Failed to execute query:\n\n{extract_sql_err(sql_err)}')
+        return None
 
 
 def write_query_to_csv(query: str, path_to_file: str, res_data: ResponseData):
@@ -110,7 +111,10 @@ def extract_sql_err(sql_err) -> str:
             break
 
     for i, c in enumerate(err_str):
-        if c == '(':
+        if c == '[':
             end_index = i - 2
+
+    print(f"RAW ERROR: {sql_err}")
+    print(f"EXTRACTED: {err_str[start_index:end_index]}")
 
     return err_str[start_index:end_index]
