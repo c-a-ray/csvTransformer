@@ -2,3 +2,7 @@
   overflow-y: scroll;
   height: 30vh;
 }
+
+.column-head-text {
+  font-weight: bold;
+}

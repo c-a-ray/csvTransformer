@@ -1,20 +1,15 @@
 .cfg-input-wrapper {
   display: flex;
-  justify-content: space-between;
-}
-
-.cfg-txt-input {
-  float: left;
-  padding-left: 40vh;
-}
-
-.cfg-del-cols {
-  float: right;
-  padding-right: 40vh;
+  flex-direction: row;
+  justify-content:space-around;
   height: 30vh;
   overflow-y: scroll;
 }
 
-.col-checkbox-label {
-  padding-right: 10px;
+.column-config-table {
+  width: 50vw;
+}
+
+.table-name-label {
+  font-weight: bold;
 }

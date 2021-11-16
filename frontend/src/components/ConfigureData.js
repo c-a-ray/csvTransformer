@@ -4,20 +4,21 @@ import {
   CardBody,
   CardHeader,
   Input,
-  InputGroup,
   Label,
   Button,
+  Table
 } from "reactstrap";
 import RenderData from "./RenderData";
 import "../styles/ConfigureData.css";
 
 function ConfigureData(props) {
-  const [columnsToDelete, setColumnsToDelete] = useState(createDeleteColDict());
+  const [columnsToDelete, setColumnsToDelete] = useState(createDeleteColDict(false));
+  const [columnDataTypes, setColumnDataTypes] = useState(createDeleteColDict("text"));
 
-  function createDeleteColDict() {
+  function createDeleteColDict(defaultVal) {
     let deleteColDict = {};
     for (let col of props.data.columns) {
-      deleteColDict[col] = false;
+      deleteColDict[col] = defaultVal;
     }
     return deleteColDict;
   }
@@ -29,22 +30,82 @@ function ConfigureData(props) {
     }));
   };
 
-  const ColumnCheckbox = ({ column, key }) => {
+  const handleDropdownChange = (e) => {
+    setColumnDataTypes((prevCols) => ({
+      ...prevCols,
+      [e.target.id]: e.target.value,
+    }))
+  }
+
+  const ColumnConfigTable = () => {
     return (
-      <div>
-        <Label check className="col-checkbox-label">
-          {column}
-        </Label>
-        <Input
-          type="checkbox"
-          id={column}
-          key={key}
-          onChange={handleCheckboxChange}
-          checked={columnsToDelete[column]}
-        />
+      <div className="column-config-table">
+        <Table>
+          <thead>
+            <tr>
+              <td className="column-head-text">Column Name</td>
+              <td className="column-head-text">Delete</td>
+              <td className="column-head-text">Select Data Type</td>
+            </tr>
+          </thead>
+          <tbody>
+            {props.data.columns.map((col, index) => {
+              return <ConfigRow column={col} key={index} />
+            })}
+          </tbody>
+        </Table>
       </div>
+    )
+  };
+
+  const ConfigRow = ({ column, key }) => {
+    return (
+      <tr key={key}>
+        <td key={column + "1"} >{column}</td>
+        <td>
+          <DeleteColumnCheckbox column={column} key={column + "2"} />
+        </td>
+        <td key={column + "3"}>
+          <ColumnDataTypeDropdown column={column} key={column + "3"} />
+        </td>
+      </tr>
+    )
+  };
+
+  const DeleteColumnCheckbox = ({ column, key }) => {
+    return (
+        <div className="col-checkbox">
+          <Input
+            type="checkbox"
+            id={column}
+            key={key}
+            onChange={handleCheckboxChange}
+            checked={columnsToDelete[column]}
+          />
+        </div>
     );
   };
+
+  const ColumnDataTypeDropdown = ({column, key}) => {
+    return (
+      <div className="col-dropdown">
+        <Input
+          type="select"
+          name="select-dtype"
+          onChange={handleDropdownChange}
+          title="Select Data Type"
+          value={columnDataTypes[column]}
+          id={column}
+          key={key}
+        >
+          <option id="text">text</option>
+          <option id="int">int</option>
+          <option id="float">float</option>
+          <option id="bool">bool</option>
+        </Input>
+      </div>
+    );
+  }
 
   const handleTableNameUpdate = (e) => {
     props.setTableName(e.target.value);
@@ -62,18 +123,21 @@ function ConfigureData(props) {
         </Card>
         <Card>
           <CardBody>
-            <InputGroup className="cfg-input-wrapper">
-              <div className="cfg-txt-input">
-                <Label>Enter table name</Label>
-                <Input type="text" bsSize="sm" onChange={handleTableNameUpdate} />
+            <div className="cfg-input-wrapper">
+              <div>
+                <div>
+                  <Label className="table-name-label">Enter table name</Label>
+                  <Input
+                    type="text"
+                    bsSize="sm"
+                    onChange={handleTableNameUpdate}
+                  />
+                </div>
               </div>
-              <div className="cfg-del-cols">
-                <Label>Select columns to delete</Label>
-                {props.data.columns.map((col, index) => {
-                  return <ColumnCheckbox column={col} key={index} />;
-                })}
+              <div>
+                <ColumnConfigTable />
               </div>
-            </InputGroup>
+            </div>
           </CardBody>
         </Card>
       </span>

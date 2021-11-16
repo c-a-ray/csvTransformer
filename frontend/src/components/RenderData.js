@@ -6,7 +6,11 @@ function RenderData(props) {
   const data = props.data;
 
   const TableHeadItem = ({ item, key }) => {
-    return <td title={item} key={key}>{item}</td>;
+    return (
+      <td title={item} key={key} className="column-head-text">
+        {item}
+      </td>
+    );
   };
 
   const TableRow = ({ items, key }) => {
