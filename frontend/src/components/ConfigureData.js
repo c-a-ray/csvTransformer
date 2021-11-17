@@ -101,7 +101,6 @@ function ConfigureData(props) {
           <option id="text">text</option>
           <option id="int">int</option>
           <option id="float">float</option>
-          <option id="bool">bool</option>
         </Input>
       </div>
     );
@@ -143,7 +142,7 @@ function ConfigureData(props) {
       </span>
       <Button
         className="continue-btn"
-        onClick={() => props.onContinue(columnsToDelete)}
+        onClick={() => props.onContinue(columnsToDelete, columnDataTypes)}
       >
         CONTINUE
       </Button>
