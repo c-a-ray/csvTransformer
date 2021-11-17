@@ -5,111 +5,58 @@ import {
   CardHeader,
   Input,
   Label,
-  Button,
-  Table
+  Button
 } from "reactstrap";
 import RenderData from "./RenderData";
 import "../styles/ConfigureData.css";
 import "../App.css"
+import { prepData, createColumnLookup, compileColsToDelete } from "../data";
+import ConfigTable from "./ConfigTable"
 
 function ConfigureData(props) {
-  const [columnsToDelete, setColumnsToDelete] = useState(createDeleteColDict(false));
-  const [columnDataTypes, setColumnDataTypes] = useState(createDeleteColDict("text"));
-
-  function createDeleteColDict(defaultVal) {
-    let deleteColDict = {};
-    for (let col of props.data.columns) {
-      deleteColDict[col] = defaultVal;
-    }
-    return deleteColDict;
-  }
-
-  const handleCheckboxChange = (e) => {
-    setColumnsToDelete((prevCols) => ({
-      ...prevCols,
-      [e.target.id]: e.target.checked,
-    }));
-  };
-
-  const handleDropdownChange = (e) => {
-    setColumnDataTypes((prevCols) => ({
-      ...prevCols,
-      [e.target.id]: e.target.value,
-    }))
-  }
-
-  const ColumnConfigTable = () => {
-    return (
-      <div className="column-config-table">
-        <Table>
-          <thead>
-            <tr>
-              <td className="column-head-text">Column Name</td>
-              <td className="column-head-text">Delete</td>
-              <td className="column-head-text">Select Data Type</td>
-            </tr>
-          </thead>
-          <tbody>
-            {props.data.columns.map((col, index) => {
-              return <ConfigRow column={col} key={index} />
-            })}
-          </tbody>
-        </Table>
-      </div>
-    )
-  };
-
-  const ConfigRow = ({ column, key }) => {
-    return (
-      <tr key={key}>
-        <td key={column + "1"} >{column}</td>
-        <td>
-          <DeleteColumnCheckbox column={column} key={column + "2"} />
-        </td>
-        <td key={column + "3"}>
-          <ColumnDataTypeDropdown column={column} key={column + "3"} />
-        </td>
-      </tr>
-    )
-  };
-
-  const DeleteColumnCheckbox = ({ column, key }) => {
-    return (
-        <div className="col-checkbox">
-          <Input
-            type="checkbox"
-            id={column}
-            key={key}
-            onChange={handleCheckboxChange}
-            checked={columnsToDelete[column]}
-          />
-        </div>
-    );
-  };
-
-  const ColumnDataTypeDropdown = ({column, key}) => {
-    return (
-      <div className="col-dropdown">
-        <Input
-          type="select"
-          name="select-dtype"
-          onChange={handleDropdownChange}
-          title="Select Data Type"
-          value={columnDataTypes[column]}
-          id={column}
-          key={key}
-        >
-          <option id="text">text</option>
-          <option id="int">int</option>
-          <option id="float">float</option>
-        </Input>
-      </div>
-    );
-  }
+  const [columnsToDelete, setColumnsToDelete] = useState(
+    createColumnLookup(false, props.data)
+  );
+  const [columnDataTypes, setColumnDataTypes] = useState(
+    createColumnLookup("text", props.data)
+  );
 
   const handleTableNameUpdate = (e) => {
     props.setTableName(e.target.value);
   };
+
+  async function handleConfigureComplete() {
+    if (props.tableName.length === 0) {
+      alert("Please enter a table name");
+      return;
+    }
+    if (!props.tableName.match(/^[A-Za-z]+$/)) {
+      alert("Table name can only contain letters");
+      return;
+    }
+
+    let reqBody = {
+      data: props.data,
+      tableName: props.tableName,
+      columnsToDelete: compileColsToDelete(columnsToDelete, props.data),
+      columnDataTypes: columnDataTypes,
+    };
+
+    const response = await fetch("http://127.0.0.1:8080/insertsql", {
+      method: "POST",
+      body: JSON.stringify(reqBody),
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    let resBody = await response.json();
+    if (resBody["status"] === 200) {
+      props.setData(prepData(resBody["data"]));
+      props.setCurrentStep(3);
+    } else {
+      alert(resBody["error"]);
+    }
+  }
 
   return (
     <div>
@@ -135,7 +82,13 @@ function ConfigureData(props) {
                 </div>
               </div>
               <div>
-                <ColumnConfigTable />
+                <ConfigTable
+                  data={props.data}
+                  columnDataTypes={columnDataTypes}
+                  setColumnDataTypes={setColumnDataTypes}
+                  columnsToDelete={columnsToDelete}
+                  setColumnsToDelete={setColumnsToDelete}
+                />
               </div>
             </div>
           </CardBody>
@@ -143,7 +96,9 @@ function ConfigureData(props) {
       </span>
       <Button
         className="continue-btn"
-        onClick={() => props.onContinue(columnsToDelete, columnDataTypes)}
+        onClick={() =>
+          handleConfigureComplete(columnsToDelete, columnDataTypes)
+        }
       >
         CONTINUE
       </Button>

@@ -9,18 +9,43 @@ import {
 } from "reactstrap";
 import RenderData from "./RenderData";
 import "../App.css"
+import { prepData } from "../data"
 
 function Transform(props) {
   const handleQueryUpdate = (e) => {
     props.setQuery(e.target.value);
   };
 
-  function handleExecuteClick() {
-    props.handleExecuteQuery(props.query);
+  async function handleExecuteQuery(query) {
+    const response = await fetch("http://127.0.0.1:8080/executequery", {
+      method: "POST",
+      body: JSON.stringify({ query: query }),
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    let body = await response.json();
+    if (body["status"] === 200) {
+      props.setData(prepData(body["data"]));
+    } else {
+      alert(body["error"]);
+    }
   }
 
-  function handleDownloadClick() {
-    props.handleDownloadClick(props.query);
+  async function handleDownloadClick() {
+    const response = await fetch("http://127.0.0.1:8080/downloadcsv", {
+      method: "POST",
+      body: JSON.stringify({ query: props.query, tableName: props.tableName }),
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    let blob = await response.blob();
+    let url = window.URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = props.tableName + "-transformed.csv";
+    a.click();
   }
 
   return (
@@ -45,7 +70,7 @@ function Transform(props) {
                 onChange={handleQueryUpdate}
               />
             </InputGroup>
-            <Button onClick={handleExecuteClick}>Execute Query</Button>
+            <Button onClick={() => handleExecuteQuery(props.query)}>Execute Query</Button>
             <Button onClick={handleDownloadClick}>Download CSV</Button>
           </CardBody>
         </Card>
