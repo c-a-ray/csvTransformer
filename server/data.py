@@ -129,7 +129,7 @@ def reconstruct_dataframe(ui_data: dict, do_not_include: list, column_data_types
         try:
             df[column] = df[column].astype(text_to_type_lookup[column_data_types[column]])
         except ValueError:
-            res_data.fail(422, f'{column_data_types[column]} is not a valid data type for column {column}')
+            res_data.fail(422, f'"{column_data_types[column]}" is not a valid data type for column "{column}"')
             return DataFrame()
 
     df.columns = [col.lower() for col in df.columns]
@@ -240,6 +240,10 @@ def initialize_table(data: DataFrame, table_name: str, res_data: ResponseData):
         table_name (str): Name for new table
         res_data (ResponseData): Object to hold data for the response
     """
+    if table_name.lower() in ['table', 'select', 'from']:
+        res_data.fail(422, f'"{table_name}" is not a valid table name')
+        return
+
     if init_table(data, table_name, res_data):
         select_all_data_query: str = f'SELECT * FROM {table_name}'
         get_query_data(select_all_data_query, res_data)
