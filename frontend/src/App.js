@@ -154,7 +154,7 @@ function App() {
     let url = window.URL.createObjectURL(blob);
     let a = document.createElement("a");
     a.href = url;
-    a.download = "transformed.csv";
+    a.download = tableName + "-transformed.csv";
     a.click();
   }
 

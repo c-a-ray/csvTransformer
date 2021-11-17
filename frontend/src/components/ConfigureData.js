@@ -10,6 +10,7 @@ import {
 } from "reactstrap";
 import RenderData from "./RenderData";
 import "../styles/ConfigureData.css";
+import "../App.css"
 
 function ConfigureData(props) {
   const [columnsToDelete, setColumnsToDelete] = useState(createDeleteColDict(false));
@@ -114,7 +115,7 @@ function ConfigureData(props) {
     <div>
       <span>
         <Card>
-          <CardHeader>Configure Data</CardHeader>
+          <CardHeader className="label-text">Configure Data</CardHeader>
           <CardBody>
             <div>Data from {props.filename}</div>
             <RenderData data={props.data} />

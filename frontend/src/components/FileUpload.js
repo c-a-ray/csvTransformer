@@ -1,5 +1,6 @@
 import React from "react";
 import ContinueButton from "./ContinueButton";
+import "../App.css"
 import {
   Card,
   CardBody,
@@ -11,7 +12,7 @@ function FileUpload(props) {
     <div>
       <span>
         <Card>
-          <CardHeader>Select a file to load</CardHeader>
+          <CardHeader className="label-text">Select a file to load</CardHeader>
           <CardBody>
             <input type="file" name="file" onChange={props.selectFile} />
           </CardBody>

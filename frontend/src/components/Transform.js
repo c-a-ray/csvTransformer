@@ -8,6 +8,7 @@ import {
   Button,
 } from "reactstrap";
 import RenderData from "./RenderData";
+import "../App.css"
 
 function Transform(props) {
   const handleQueryUpdate = (e) => {
@@ -26,8 +27,9 @@ function Transform(props) {
     <div>
       <span>
         <Card>
-          <CardHeader>Table name: {props.tableName}</CardHeader>
+          <CardHeader className="label-text">Query Data</CardHeader>
           <CardBody>
+            <label>Table name: {props.tableName}</label>
             <RenderData data={props.data} />
           </CardBody>
         </Card>
