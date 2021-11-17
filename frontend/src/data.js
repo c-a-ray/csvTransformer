@@ -43,3 +43,11 @@ export function compileColsToDelete(columnsToDelete, data) {
 
   return colsToDelete;
 }
+
+export function downloadCSV(blob, name) {
+  let url = window.URL.createObjectURL(blob);
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = name + "-transformed.csv";
+  a.click();
+}

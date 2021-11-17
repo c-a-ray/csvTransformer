@@ -1,17 +1,17 @@
 import React from "react";
+import { Card, CardBody, CardHeader } from "reactstrap";
 import ContinueButton from "./ContinueButton";
-import "../App.css"
 import { prepData } from "../data"
-import {
-  Card,
-  CardBody,
-  CardHeader
-} from "reactstrap";
+import "../App.css";
 
 function FileUpload(props) {
   const selectFile = (event) => {
     props.setSelectedFile(event.target.files[0]);
     props.setIsFileSelected(true);
+  };
+
+  const handleHasHeaderChange = () => {
+    props.setHasHeader(!props.hasHeader);
   };
 
   async function uploadFile() {
@@ -38,10 +38,6 @@ function FileUpload(props) {
       alert(body["error"]);
     }
   }
-
-  const handleHasHeaderChange = () => {
-    props.setHasHeader(!props.hasHeader);
-  };
 
   return (
     <div>

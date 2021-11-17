@@ -8,10 +8,10 @@ import {
   Button
 } from "reactstrap";
 import RenderData from "./RenderData";
-import "../styles/ConfigureData.css";
-import "../App.css"
-import { prepData, createColumnLookup, compileColsToDelete } from "../data";
 import ConfigTable from "./ConfigTable"
+import { prepData, createColumnLookup, compileColsToDelete } from "../data";
+import "../styles/ConfigureData.css";
+import "../App.css";
 
 function ConfigureData(props) {
   const [columnsToDelete, setColumnsToDelete] = useState(

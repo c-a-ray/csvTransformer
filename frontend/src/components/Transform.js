@@ -8,8 +8,8 @@ import {
   Button,
 } from "reactstrap";
 import RenderData from "./RenderData";
-import "../App.css"
-import { prepData } from "../data"
+import { prepData, downloadCSV } from "../data"
+import "../App.css";
 
 function Transform(props) {
   const handleQueryUpdate = (e) => {
@@ -40,13 +40,10 @@ function Transform(props) {
       headers: { "Content-Type": "application/json" },
     });
 
-    let blob = await response.blob();
-    let url = window.URL.createObjectURL(blob);
-    let a = document.createElement("a");
-    a.href = url;
-    a.download = props.tableName + "-transformed.csv";
-    a.click();
+    downloadCSV(await response.blob(), props.tableName);
   }
+
+
 
   return (
     <div>

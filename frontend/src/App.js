@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import "./App.css";
 import FileUpload from "./components/FileUpload";
 import ConfigureData from "./components/ConfigureData";
 import Transform from "./components/Transform";
 import Header from "./components/Header";
+import "./App.css";
 
 function App() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -45,10 +45,10 @@ function App() {
         return (
           <ConfigureData
             data={data}
+            setData={setData}
             filename={selectedFile.name}
             tableName={tableName}
             setTableName={setTableName}
-            setData={setData}
             setCurrentStep={setCurrentStep}
           />
         );
