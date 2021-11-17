@@ -44,8 +44,8 @@ def loadcsv() -> Response:
     return make_response(jsonify(res), res['status'])
 
 
-@app.route('/insertsql', methods=['POST'])
-def insertsql() -> Response:
+@app.route('/initializeTable', methods=['POST'])
+def initializeTable() -> Response:
     """
     Convert UI formatted data back into a DataFrame
     and create a new database table containing the data.
@@ -68,8 +68,8 @@ def insertsql() -> Response:
     return make_response(jsonify(res), res['status'])
 
 
-@app.route('/executequery', methods=['POST'])
-def executequery() -> Response:
+@app.route('/executeQuery', methods=['POST'])
+def executeQuery() -> Response:
     """
     Executes the query specified in the request on the database.
 

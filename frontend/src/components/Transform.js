@@ -17,7 +17,7 @@ function Transform(props) {
   };
 
   async function handleExecuteQuery(query) {
-    const response = await fetch("http://127.0.0.1:8080/executequery", {
+    const response = await fetch("http://127.0.0.1:8080/executeQuery", {
       method: "POST",
       body: JSON.stringify({ query: query }),
       mode: "cors",

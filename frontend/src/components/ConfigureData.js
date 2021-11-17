@@ -42,7 +42,7 @@ function ConfigureData(props) {
       columnDataTypes: columnDataTypes,
     };
 
-    const response = await fetch("http://127.0.0.1:8080/insertsql", {
+    const response = await fetch("http://127.0.0.1:8080/initializeTable", {
       method: "POST",
       body: JSON.stringify(reqBody),
       mode: "cors",
