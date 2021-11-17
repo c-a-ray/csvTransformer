@@ -81,7 +81,7 @@ function App() {
     return { columns: col_names, rows: prepared_rows };
   }
 
-  async function handleConfigureComplete(columnsToDelete) {
+  async function handleConfigureComplete(columnsToDelete, columnDataTypes) {
     if (tableName.length === 0) {
       alert("Please enter a table name");
       return;
@@ -107,6 +107,7 @@ function App() {
       data: data,
       tableName: tableName,
       columnsToDelete: colsToDelete,
+      columnDataTypes: columnDataTypes
     };
 
     const response = await fetch("http://127.0.0.1:8080/insertsql", {

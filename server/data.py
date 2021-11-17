@@ -4,7 +4,18 @@ from csv import reader
 from pandas import DataFrame, read_csv
 from postgres import execute_query, init_table, write_query_to_csv
 from response_data import ResponseData
+from numpy import int64, float64
 
+text_to_type_lookup: dict = {
+    'int': int,
+    'float': float,
+    'text': str
+}
+
+numpy_to_type_lookup: dict = {
+    int64: int,
+    float64: float
+}
 
 def get_col_types(filepath: str, has_header: bool) -> list:
     """
@@ -60,8 +71,13 @@ def format_data_for_ui(csv_data: DataFrame, has_header: bool, col_types: list) -
 
     row_data: list = []
     for index, csv_row in csv_data.iterrows():
-        row: dict = {col_name: col_types[col_idx](
-            csv_row[col_name]) for col_idx, col_name in enumerate(col_names)}
+        row: dict = {}
+        for col_idx, col_name in enumerate(col_names):
+            col_type = col_types[col_idx]
+            if col_type in numpy_to_type_lookup:
+                col_type = numpy_to_type_lookup[col_type]
+            row[col_name] = col_type(csv_row[col_name])
+
         row['id'] = int(index)
         row_data.append(row)
 
@@ -91,7 +107,7 @@ def replace_bad_col_names(data: DataFrame) -> list:
     return col_names
 
 
-def reconstruct_dataframe(ui_data: dict, do_not_include: list) -> DataFrame:
+def reconstruct_dataframe(ui_data: dict, do_not_include: list, column_data_types: dict, res_data: ResponseData) -> DataFrame:
     """
     Converts UI formatted data into a DataFrame.
 
@@ -101,7 +117,6 @@ def reconstruct_dataframe(ui_data: dict, do_not_include: list) -> DataFrame:
     Returns:
         DataFrame: DataFrame containing same data as ui_data
     """
-
     column_lookup: dict = create_column_lookup(ui_data['columns'])
 
     df_rows: dict = {}
@@ -110,6 +125,13 @@ def reconstruct_dataframe(ui_data: dict, do_not_include: list) -> DataFrame:
                                       item in enumerate(ui_data_row['items'])}
 
     df: DataFrame = DataFrame.from_dict(data=df_rows).T
+    for column in df:
+        try:
+            df[column] = df[column].astype(text_to_type_lookup[column_data_types[column]])
+        except ValueError:
+            res_data.fail(422, f'{column_data_types[column]} is not a valid data type for column {column}')
+            return DataFrame()
+
     df.columns = [col.lower() for col in df.columns]
 
     for col in do_not_include:

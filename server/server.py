@@ -57,10 +57,12 @@ def insertsql() -> Response:
     res_data = ResponseData()
     req: dict = request.get_json()
 
-    data: DataFrame = reconstruct_dataframe(
-        req['data'], req['columnsToDelete'])
+    data: DataFrame = reconstruct_dataframe(req['data'], req['columnsToDelete'], req['columnDataTypes'], res_data)
 
-    initialize_table(data, req['tableName'], res_data)
+    print(data.dtypes)
+    
+    if not data.empty:
+        initialize_table(data, req['tableName'], res_data)
 
     res: dict = res_data.get_response_dict()
     return make_response(jsonify(res), res['status'])
