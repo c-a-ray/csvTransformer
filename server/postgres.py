@@ -1,3 +1,5 @@
+"""postgres.py: Functions for interacting with the CSVTransform database"""
+
 from sqlalchemy import create_engine
 from pandas import DataFrame, read_sql
 from sqlalchemy.exc import SQLAlchemyError
@@ -12,34 +14,28 @@ def pg_engine():
     Returns:
         [Engine]: Engine to connect to CSVTransform DB
     """
+
     return create_engine('postgresql+psycopg2://postgres:password@localhost/csvtransform')
-
-
-def format_columns(col_type_lkp: dict) -> str:
-    pg_cols = '('
-    i = 0
-    for col in col_type_lkp:
-        type = col_type_lkp[col]
-        pg_cols = pg_cols + f'{col} {type}'
-        if i < len(col_type_lkp) - 1:
-            pg_cols = pg_cols + ', '
-        i = i + 1
-    pg_cols = pg_cols + ')'
-    return pg_cols
 
 
 def init_table(df: DataFrame, table_name: str, res_data: ResponseData) -> bool:
     """
-    Creates a new table in the CSVTransform DB
+    Creates a new table in the CSVTransform DB. Drops and re-creates 
+    the schema before doing this to ensure no other tables are in the
+    DB. This is a pretty hacky solution, but a good amount of re-architecture
+    would be needed for a new solution to deleting old tables. This is
+    a good place for improvement if development of this project continues
+    beyond CS 361.
 
     Args:
-        df (DataFrame): Data to insert into table
-        table_name (str): Name of table
-        res_data (ResponseData): Object to hold data for response
+        df (DataFrame): data to insert into table
+        table_name (str): name of table
+        res_data (ResponseData): object to hold data for response
 
     Returns:
-        bool: Whether the table initialization was successful or not
+        bool: True if table initialization was successful, else False
     """
+
     try:
         with pg_engine().connect() as conn:
             # Re-create schema so no tables are left over
@@ -60,16 +56,18 @@ def init_table(df: DataFrame, table_name: str, res_data: ResponseData) -> bool:
 
 def execute_query(query: str, res_data: ResponseData) -> DataFrame:
     """
-    Executes a query and returns the data if successful,
+    Executes a query and returns the results if successful,
     otherwise sets error status/message on response.
 
     Args:
-        query (str): Query to execute
-        res_data (ResponseData): Object to hold data for response
+        query (str): query to execute
+        res_data (ResponseData): object to hold data for response
 
     Returns:
-        DataFrame: The query results
+        DataFrame: a DataFrame containing the query results if successful,
+                   else an empty DataFrame
     """
+
     try:
         with pg_engine().connect() as conn:
             return read_sql(query, conn)
@@ -89,6 +87,7 @@ def write_query_to_csv(query: str, path_to_file: str, res_data: ResponseData):
         path_to_file (str): Location to write CSV
         res_data (ResponseData): Object to hold response data
     """
+
     try:
         with pg_engine().connect() as conn:
             df = read_sql(query, conn)
@@ -100,16 +99,19 @@ def write_query_to_csv(query: str, path_to_file: str, res_data: ResponseData):
 
 def extract_sql_err(sql_err) -> str:
     """
-    Extracts a useful error message from a
-    SQLAlchemy error.
+    Extracts a useful error message from a SQLAlchemy error.
 
     Args:
-        sql_err: Raw SQLAlchemy error 
+        sql_err: raw SQLAlchemy error 
 
     Returns:
-        str: Extracted error message
+        str: extracted error message
     """
+
+    # Convert the error to a str
     err_str: str = str(sql_err)
+
+    # Find the first instance of ')'
     start_index = 0
     end_index = 0
     for i, c in enumerate(err_str):
@@ -117,11 +119,10 @@ def extract_sql_err(sql_err) -> str:
             start_index = i + 2
             break
 
+    # Find the last instance of '['
     for i, c in enumerate(err_str):
         if c == '[':
             end_index = i - 2
 
-    print(f"RAW ERROR: {sql_err}")
-    print(f"EXTRACTED: {err_str[start_index:end_index]}")
-
+    # Return the part of the error string between these indices
     return err_str[start_index:end_index]

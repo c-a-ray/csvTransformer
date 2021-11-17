@@ -3,7 +3,7 @@ import FileUpload from "./components/FileUpload";
 import ConfigureData from "./components/ConfigureData";
 import Transform from "./components/Transform";
 import Header from "./components/Header";
-import "./App.css";
+import "./styles/App.css";
 
 function App() {
   const [currentStep, setCurrentStep] = useState(1);

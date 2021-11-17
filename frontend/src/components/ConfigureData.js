@@ -11,7 +11,7 @@ import RenderData from "./RenderData";
 import ConfigTable from "./ConfigTable"
 import { prepData, createColumnLookup, compileColsToDelete } from "../data";
 import "../styles/ConfigureData.css";
-import "../App.css";
+import "../styles/App.css";
 
 function ConfigureData(props) {
   const [columnsToDelete, setColumnsToDelete] = useState(

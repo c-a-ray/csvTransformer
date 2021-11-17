@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardBody, CardHeader } from "reactstrap";
 import ContinueButton from "./ContinueButton";
 import { prepData } from "../data"
-import "../App.css";
+import "../styles/App.css";
 
 function FileUpload(props) {
   const selectFile = (event) => {

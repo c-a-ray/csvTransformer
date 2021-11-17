@@ -9,7 +9,7 @@ import {
 } from "reactstrap";
 import RenderData from "./RenderData";
 import { prepData, downloadCSV } from "../data"
-import "../App.css";
+import "../styles/App.css"
 
 function Transform(props) {
   const handleQueryUpdate = (e) => {
