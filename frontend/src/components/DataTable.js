@@ -1,10 +1,12 @@
+// DataTable.js
+
+// Table of data; used in the second and third views
+
 import React, { memo } from "react";
 import { Table } from "reactstrap";
 import "../styles/RenderData.css";
 
-function RenderData(props) {
-  const data = props.data;
-
+function DataTable(props) {
   const TableHeadItem = ({ item, key }) => {
     return (
       <td title={item} key={key} className="column-head-text">
@@ -23,28 +25,25 @@ function RenderData(props) {
     );
   };
 
-  const DataTable = () => {
-    return (
+  return (
       <div className="data-table">
         <Table>
           <thead>
             <tr>
-              {data.columns.map((col, index) => {
+              {props.data.columns.map((col, index) => {
                 return <TableHeadItem item={col} key={index} />;
               })}
             </tr>
           </thead>
           <tbody>
-            {data.rows.map((row) => {
+            {props.data.rows.map((row) => {
               return <TableRow items={row.items} key={row.id} />;
             })}
           </tbody>
         </Table>
       </div>
-    );
-  };
-
-  return <DataTable data={props.data} />;
+  );
 }
 
-export default memo(RenderData);
+// Memoize for efficiency
+export default memo(DataTable);

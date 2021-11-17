@@ -1,37 +1,45 @@
+// ConfigureData.js
+
+// Second view. Contains a table showing the uploaded CSV data,
+// an input for the table name, and a config table. The config
+// table contains a row for every column. Each row also has
+// a checkbox to delete the column and a dropdown to choose
+// the column's data type.
+
 import React, { useState } from "react";
+import { Card, CardBody, CardHeader, Input, Label, Button } from "reactstrap";
+import DataTable from "./DataTable";
+import ConfigTable from "./ConfigTable";
 import {
-  Card,
-  CardBody,
-  CardHeader,
-  Input,
-  Label,
-  Button
-} from "reactstrap";
-import RenderData from "./RenderData";
-import ConfigTable from "./ConfigTable"
-import { prepData, createColumnLookup, compileColsToDelete } from "../data";
+  prepData,
+  createColumnLookup,
+  compileColsToDelete,
+  validateTableName,
+} from "../data";
 import "../styles/ConfigureData.css";
 import "../styles/App.css";
 
 function ConfigureData(props) {
+  // For storing the columns to delete
   const [columnsToDelete, setColumnsToDelete] = useState(
     createColumnLookup(false, props.data)
   );
+
+  // For storing the column data types
   const [columnDataTypes, setColumnDataTypes] = useState(
     createColumnLookup("text", props.data)
   );
 
+  // Handle updating the table name input
   const handleTableNameUpdate = (e) => {
     props.setTableName(e.target.value);
   };
 
+  // Handle clicking the continue button
+  // Make sure a valid table name has been given,
+  // then send a request to create the table in the DB
   async function handleConfigureComplete() {
-    if (props.tableName.length === 0) {
-      alert("Please enter a table name");
-      return;
-    }
-    if (!props.tableName.match(/^[A-Za-z]+$/)) {
-      alert("Table name can only contain letters");
+    if (!validateTableName(props.tableName)) {
       return;
     }
 
@@ -65,7 +73,7 @@ function ConfigureData(props) {
           <CardHeader className="label-text">Configure Data</CardHeader>
           <CardBody>
             <div>Data from {props.filename}</div>
-            <RenderData data={props.data} />
+            <DataTable data={props.data} />
           </CardBody>
         </Card>
         <Card>
@@ -95,7 +103,6 @@ function ConfigureData(props) {
         </Card>
       </span>
       <Button
-        className="continue-btn"
         onClick={() =>
           handleConfigureComplete(columnsToDelete, columnDataTypes)
         }

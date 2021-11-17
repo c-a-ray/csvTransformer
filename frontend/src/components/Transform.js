@@ -1,3 +1,8 @@
+// Transform.js
+
+// The third and final view. Contains a data table, a PostgreSQL query editor,
+// an "Execute Query" button, and a "Download CSV" button
+
 import React from "react";
 import {
   Card,
@@ -7,15 +12,31 @@ import {
   Input,
   Button,
 } from "reactstrap";
-import RenderData from "./RenderData";
-import { prepData, downloadCSV } from "../data"
-import "../styles/App.css"
+import DataTable from "./DataTable";
+import { prepData, downloadCSV } from "../data";
+import "../styles/App.css";
 
 function Transform(props) {
+  // Handle updates to the query editor
   const handleQueryUpdate = (e) => {
+    e.preventDefault();
     props.setQuery(e.target.value);
   };
 
+  // Handle tab in the query editor
+  const handleQueryKeyDown = (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      var val = props.query,
+          start = e.target.selectionStart,
+          end = e.target.selectionEnd;
+      props.setQuery(val.substring(0, start) + "\t" + val.substring(end));
+    }
+  };
+
+  // Handle click to "Execute Query" button
+  // Send a request with the query to the server, wait for
+  // the results, and update state
   async function handleExecuteQuery(query) {
     const response = await fetch("http://127.0.0.1:8080/executeQuery", {
       method: "POST",
@@ -32,6 +53,7 @@ function Transform(props) {
     }
   }
 
+  // Handle click to "Download" button
   async function handleDownloadClick() {
     const response = await fetch("http://127.0.0.1:8080/downloadcsv", {
       method: "POST",
@@ -43,8 +65,6 @@ function Transform(props) {
     downloadCSV(await response.blob(), props.tableName);
   }
 
-
-
   return (
     <div>
       <span>
@@ -52,7 +72,7 @@ function Transform(props) {
           <CardHeader className="label-text">Query Data</CardHeader>
           <CardBody>
             <label>Table name: {props.tableName}</label>
-            <RenderData data={props.data} />
+            <DataTable data={props.data} />
           </CardBody>
         </Card>
         <Card>
@@ -65,9 +85,13 @@ function Transform(props) {
                 id="querytext"
                 rows="6"
                 onChange={handleQueryUpdate}
+                onKeyDown={handleQueryKeyDown}
+                value={props.query}
               />
             </InputGroup>
-            <Button onClick={() => handleExecuteQuery(props.query)}>Execute Query</Button>
+            <Button onClick={() => handleExecuteQuery(props.query)}>
+              Execute Query
+            </Button>
             <Button onClick={handleDownloadClick}>Download CSV</Button>
           </CardBody>
         </Card>

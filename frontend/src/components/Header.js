@@ -1,3 +1,8 @@
+// Header.js
+
+// Header component. Displayed in every UI view. Header contains button that returns
+// to step 1 if a file is selected. Button does nothing if no file is selected.
+
 import React, { useState } from "react";
 import { Button, Tooltip } from "reactstrap";
 

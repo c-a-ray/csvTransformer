@@ -1,3 +1,9 @@
+// App.js
+
+// Main component
+// Sets up top-level state values, determines the current UI step, and renders
+// the view corresponding with that step and a header.
+
 import React, { useState } from "react";
 import FileUpload from "./components/FileUpload";
 import ConfigureData from "./components/ConfigureData";

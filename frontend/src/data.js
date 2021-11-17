@@ -61,3 +61,16 @@ export function downloadCSV(blob, name) {
   a.download = name + "-transformed.csv";
   a.click();
 }
+
+// Verify that a tableName is valid
+export function validateTableName(tableName) {
+  if (tableName.length === 0) {
+    alert("Please enter a table name");
+    return false;
+  }
+  if (!tableName.match(/^[A-Za-z]+$/)) {
+    alert("Table name can only contain letters");
+    return false;
+  }
+  return true;
+}

@@ -1,19 +1,28 @@
+// FileUpload.js
+
+// First view. Contains a file upload input, CSV header checkbox, and continue button
+
 import React from "react";
-import { Card, CardBody, CardHeader } from "reactstrap";
-import ContinueButton from "./ContinueButton";
-import { prepData } from "../data"
+import { Card, CardBody, CardHeader, Button } from "reactstrap";
+import { prepData } from "../data";
 import "../styles/App.css";
 
 function FileUpload(props) {
+  // Handle selecting file in the file browser
   const selectFile = (event) => {
     props.setSelectedFile(event.target.files[0]);
     props.setIsFileSelected(true);
   };
 
+  // Hander header checkbox click
   const handleHasHeaderChange = () => {
     props.setHasHeader(!props.hasHeader);
   };
 
+  // Handle continue button clock
+  // Make sure a file has been selected, send a request to validate
+  // and load the CSV file, then wait for a response, store the returned
+  // data in state and move to the next view
   async function uploadFile() {
     if (!props.isFileSelected || !props.selectedFile) {
       alert("Please select a CSV file to upload");
@@ -67,9 +76,7 @@ function FileUpload(props) {
             </label>
           </CardBody>
           <CardBody>
-            <ContinueButton
-              handleSubmission={() => uploadFile()}
-            />
+            <Button onClick={() => uploadFile()}>CONTINUE</Button>
           </CardBody>
         </Card>
       </span>
