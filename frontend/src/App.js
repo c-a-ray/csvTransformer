@@ -30,31 +30,6 @@ function App() {
     setIsFileSelected(true);
   };
 
-  async function uploadFile() {
-    if (!isFileSelected || !selectedFile) {
-      alert("Please select a CSV file to upload");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("File", selectedFile);
-    formData.append("HasHeader", hasHeader);
-
-    const response = await fetch("http://127.0.0.1:8080/loadcsv", {
-      method: "POST",
-      body: formData,
-      mode: "cors",
-    });
-
-    var body = await response.json();
-    if (body["status"] === 200) {
-      setData(prepData(body["data"]));
-      setCurrentStep(2);
-    } else {
-      alert(body["error"]);
-    }
-  }
-
   const handleHasHeaderChange = () => {
     setHasHeader(!hasHeader);
   };
@@ -166,10 +141,12 @@ function App() {
           <FileUpload
             selectFile={selectFile}
             selectedFile={selectedFile}
-            uploadFile={uploadFile}
-            isSelected={isFileSelected}
+            isFileSelected={isFileSelected}
             hasHeader={hasHeader}
             handleCheckboxChange={handleHasHeaderChange}
+            setData={setData}
+            prepData={prepData}
+            setCurrentStep={setCurrentStep}
           />
         );
       case 2:
