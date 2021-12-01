@@ -13,6 +13,7 @@ import {
   Button,
 } from "reactstrap";
 import DataTable from "./DataTable";
+import HelpModal from "./HelpModal";
 import { prepData, downloadCSV } from "../data";
 import "../styles/App.css";
 
@@ -25,11 +26,11 @@ function Transform(props) {
 
   // Handle tab in the query editor
   const handleQueryKeyDown = (e) => {
-    if (e.key === 'Tab') {
+    if (e.key === "Tab") {
       e.preventDefault();
       var val = props.query,
-          start = e.target.selectionStart,
-          end = e.target.selectionEnd;
+        start = e.target.selectionStart,
+        end = e.target.selectionEnd;
       props.setQuery(val.substring(0, start) + "\t" + val.substring(end));
     }
   };
@@ -89,10 +90,13 @@ function Transform(props) {
                 value={props.query}
               />
             </InputGroup>
-            <Button onClick={() => handleExecuteQuery(props.query)}>
-              Execute Query
-            </Button>
-            <Button onClick={handleDownloadClick}>Download CSV</Button>
+            <CardBody>
+              <Button onClick={() => handleExecuteQuery(props.query)}>
+                Execute Query
+              </Button>
+              <Button onClick={handleDownloadClick}>Download CSV</Button>
+            </CardBody>
+            <HelpModal step={3} />
           </CardBody>
         </Card>
       </span>

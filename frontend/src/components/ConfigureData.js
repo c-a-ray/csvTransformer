@@ -10,6 +10,7 @@ import React, { useState } from "react";
 import { Card, CardBody, CardHeader, Input, Label, Button } from "reactstrap";
 import DataTable from "./DataTable";
 import ConfigTable from "./ConfigTable";
+import HelpModal from "./HelpModal";
 import {
   prepData,
   createColumnLookup,
@@ -102,13 +103,16 @@ function ConfigureData(props) {
           </CardBody>
         </Card>
       </span>
-      <Button
-        onClick={() =>
-          handleConfigureComplete(columnsToDelete, columnDataTypes)
-        }
-      >
-        CONTINUE
-      </Button>
+      <CardBody>
+        <Button
+          onClick={() =>
+            handleConfigureComplete(columnsToDelete, columnDataTypes)
+          }
+        >
+          Continue
+        </Button>
+        <HelpModal step={2} />
+      </CardBody>
     </div>
   );
 }

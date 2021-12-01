@@ -20,11 +20,10 @@ function App() {
   const [query, setQuery] = useState("");
   const [tableName, setTableName] = useState("");
 
-  function handleHeaderBtnClick() {
+  const handleRestart = () => {
     setCurrentStep(1);
     setSelectedFile();
     setIsFileSelected(false);
-    setSelectedFile();
     setHasHeader(true);
     setData();
     setQuery();
@@ -74,7 +73,7 @@ function App() {
   return (
     <div className="App">
       <Header
-        handleHeaderBtnClick={handleHeaderBtnClick}
+        handleRestart={handleRestart}
         isFileSelected={isFileSelected}
       />
 

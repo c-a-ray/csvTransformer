@@ -4,6 +4,7 @@
 
 import React from "react";
 import { Card, CardBody, CardHeader, Button } from "reactstrap";
+import HelpModal from "./HelpModal";
 import { prepData } from "../data";
 import "../styles/App.css";
 
@@ -76,7 +77,8 @@ function FileUpload(props) {
             </label>
           </CardBody>
           <CardBody>
-            <Button onClick={() => uploadFile()}>CONTINUE</Button>
+            <Button onClick={() => uploadFile()}>Continue</Button>
+            <HelpModal step={1} />
           </CardBody>
         </Card>
       </span>
