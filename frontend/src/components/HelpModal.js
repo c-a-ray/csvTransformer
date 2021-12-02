@@ -16,6 +16,7 @@ function HelpModal(props) {
   const getModalBodyText = (step) => {
     switch (step) {
       case 1:
+      default:
         return (
           <div>
             <WelcomeText />

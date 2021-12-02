@@ -4,7 +4,7 @@
 // to step 1 if a file is selected. Button does nothing if no file is selected.
 
 import React, { useState } from "react";
-import { Card, CardBody, Button, Tooltip, Modal, ModalBody } from "reactstrap";
+import { Card, CardBody, Button, Tooltip, Modal } from "reactstrap";
 import "../styles/Header.css"
 
 function Header(props) {

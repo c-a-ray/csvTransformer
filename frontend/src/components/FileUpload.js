@@ -60,8 +60,8 @@ function FileUpload(props) {
           <CardBody>
             {props.isFileSelected ? (
               <div>
-                <p>Filetype: {props.selectedFile.type}</p>
-                <p>Size in bytes: {props.selectedFile.size}</p>
+                <p>File type: {props.selectedFile.type}</p>
+                <p>Size: {props.selectedFile.size} bytes</p>
               </div>
             ) : null}
           </CardBody>

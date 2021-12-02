@@ -46,7 +46,7 @@ export const PageOneHelpText = () => {
         of columns and every column has only one data type.
       </p>
       <div className="modal-image">
-        <img src={BrowseButtonImage} />
+        <img src={BrowseButtonImage} alt="browse button" />
       </div>
       <p>
         If the chosen file has a header row, check the header checkbox. If this
@@ -55,14 +55,14 @@ export const PageOneHelpText = () => {
         the first row will be included as the first table row.
       </p>
       <div className="modal-image">
-        <img src={HeaderCheckboxImage} />
+        <img src={HeaderCheckboxImage} alt="header checkbox" />
       </div>
       <p>
         After a file is selected, just click on the "Continue" button to move to
         the configuration page
       </p>
       <div className="modal-image">
-        <img src={ContinueButtonImage} />
+        <img src={ContinueButtonImage} alt="continue button" />
       </div>
     </div>
   );
@@ -74,42 +74,56 @@ export const PageTwoHelpText = () => {
       <h4 className="modal-section-header">Configuring your temporary table</h4>
       <p>
         In this view, you will make some configuration decisions that will
-        affect how your CSV data is stored in the temporary database. First, you
-        must choose a table name. When this step is complete, a new temporary
-        table will be created in a PostgreSQL database with this name. For
-        example, if you name the table "myTable" in this step, you will access
-        the data in the next step by running queries that end with "FROM
-        myTable"
+        affect how your CSV data is stored in the database. After configuration
+        choices have been made, clicking the "Select" button will create a 
+        new temporary table in the PostgreSQL database and move you to the
+        next and final step in which you can execute SQL queries on the temporary
+        table and download the results.
+      </p>
+      <p>
+        At the bottom left of the page is a text input labelled "Enter table name".
+        Choosing a table name is the only required action on this page. When "Continue"
+        is clicked, the new temporary table will be created with the name you specify here.
+        Words reserved by PostgreSQL such as "table" and "select" are not allowed.
       </p>
       <div className="modal-image">
-        <img src={EnterTableNameImage} />
+        <img src={EnterTableNameImage} alt="table name text input"/>
       </div>
       <p>
         At the bottom right of this page, there is a table to perform
-        configuration on columns. The table has one row for every column in the
-        loaded CSV data. If the "Delete" checkbox is checked for a column, that
-        column is not included when the PostgreSQL table is created.
+        configuration on columns. The table has a row for every column
+        in your CSV data. Each row contains a "Delete" checkbox and a
+        "Select Data Type" dropdown.
+      </p>
+      <p>
+        If the "Delete" checkbox is checked for a column, that column is
+        not included when the PostgreSQL table is created.
       </p>
       <div className="modal-image">
-        <img src={DeleteCheckboxImage} />
+        <img src={DeleteCheckboxImage} alt="delete column checkbox" />
       </div>
       <p>
-        Additionaly, each column row has a "Select Data Type" dropdown for
-        determining each column's data type. The default type is "text" because
-        this will work with any kind of value. If a column contains only
-        integers, for example, you would want to set that column to "int". If an
-        invalid data type is given (e.g. specifying a column with text as "int")
-        will result in an error when attempting to continue.
+        The "Select Data Type" dropdown can be used to specify each column's data
+        type. Specifying a column's data type can make it easier to perform certain
+        operations (e.g. math operations on numeric types).
+      </p>
+      <p>
+        The default column type is "text" because this will work with any kind of value.
+        If a column contains only numeric values, though, it is beneficial to change
+        its data type. For example, if a column contains only integers, you will 
+        want to select "int" in the dropdown for that column. If an invalid data type
+        is given (e.g. specifying a column with text values as type "int"), an error
+        message will be displayed when clicking "Continue".
       </p>
       <div className="modal-image">
-        <img src={DataTypeDropdownImage} />
+        <img src={DataTypeDropdownImage} alt="data type dropdown" />
       </div>
       <p>
         When configuration is finished, click on the "Continue" button to create
         the SQL table and open up the query editor.
       </p>
       <div className="modal-image">
-        <img src={ContinueButtonImage} />
+        <img src={ContinueButtonImage} alt="continue button"/>
       </div>
     </div>
   );
